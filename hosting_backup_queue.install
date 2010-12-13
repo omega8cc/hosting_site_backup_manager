@@ -21,6 +21,7 @@ function hosting_backup_queue_uninstall() {
 function hosting_backup_queue_schema() {
   $schema = array();
 
+  // Keep track of site specific settings, and the last times that a site backup was performed on a site.
 
   return $schema;
 }
