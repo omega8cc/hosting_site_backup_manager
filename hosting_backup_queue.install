@@ -21,7 +21,27 @@ function hosting_backup_queue_uninstall() {
 function hosting_backup_queue_schema() {
   $schema = array();
 
-  // Keep track of site specific settings, and the last times that a site backup was performed on a site.
+  $schema['hosting_backup_queue_sites'] = array(
+    'description' => t('A cache of the last backup times of all enabled sites.'),
+    'fields' => array(
+      'site_id' => array(
+        'description' => t('The sites nid from the {node} table.'),
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'last_backup' => array(
+        'description' => t('The timestamp of the last backup of this site.'),
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('site_id'),
+    'indexes' => array(
+      'last_backup' => array('last_backup'),
+    ),
+  );
+
+
 
   return $schema;
 }

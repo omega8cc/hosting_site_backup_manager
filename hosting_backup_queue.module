@@ -23,7 +23,6 @@ function hosting_backup_queue_perm() {
   return array('create backup schedules', 'administer hosting backup queue');
 }
 
-
 /**
  * Configuration form for backup schedules
  */
@@ -98,9 +97,10 @@ function _hosting_backup_queue_get_outstanding_backups($limit = 20) {
   $return = array();
   $interval = variable_get('hosting_backup_queue_default_interval', strtotime('1 day', 0));
 
-  // TODO: Find a better way to do this than having three subselects.
-  $subselect  = "(SELECT MAX(timestamp) FROM {hosting_site_backups} WHERE site = b.site)";
-  $result = db_query_range("SELECT s.nid, $subselect AS last_backup_timestamp FROM {hosting_site} s INNER JOIN {node} n ON s.vid = n.vid LEFT JOIN {hosting_site_backups} b ON b.site = s.nid WHERE s.status = %d  AND (($subselect IS NULL) OR ($subselect < %d)) ORDER BY last_backup_timestamp, n.nid ASC", HOSTING_SITE_ENABLED, time() - $interval, 0, $limit);
+  _hosting_backup_queue_ensure_all_sites_denormalised();
+
+  $result = db_query("SELECT s.nid FROM {hosting_site} s INNER JOIN {node} n ON s.vid = n.vid LEFT JOIN {hosting_backup_queue_sites} b ON b.site_id = s.nid WHERE s.status = %d AND b.last_backup < %d ORDER BY b.last_backup, n.nid ASC LIMIT %d", HOSTING_SITE_ENABLED, time() - $interval, $limit);
+
   while ($node = db_fetch_object($result)) {
     $return[$node->nid] =  node_load($node->nid);
   }
@@ -118,5 +118,44 @@ function hosting_backup_queue_sites_count() {
   else {
     // We don't support per site config, just yet.
     return 0;
+  }
+}
+
+/**
+ * Update the last backup timestamp of the given site.
+ */
+function hosting_backup_queue_backup_time_update($site, $timestamp = NULL) {
+  $record = array(
+    'site_id' => $site,
+    'last_backup' => !is_null($timestamp) ? $timestamp : time(),
+  );
+  if (db_result(db_query('SELECT count(*) FROM {hosting_backup_queue_sites} WHERE site_id = %d', $record['site_id']))) {
+    // Update query:
+    drupal_write_record('hosting_backup_queue_sites', $record, 'site_id');
+  }
+  else {
+    // Insert query:
+    drupal_write_record('hosting_backup_queue_sites', $record);
+  }
+}
+
+/**
+ * Clear the last backup timestamp for the given site.
+ */
+function hosting_backup_queue_backup_time_clear($site) {
+  db_query('DELETE FROM {hosting_backup_queue_sites} WHERE site_id = %d', $site);
+}
+
+/**
+ * Ensure that we have denormalised backup data for all enabled sites.
+ */
+function _hosting_backup_queue_ensure_all_sites_denormalised() {
+  $sites = db_query('SELECT n.nid FROM {hosting_site} s INNER JOIN {node} n ON s.vid = n.vid LEFT JOIN {hosting_backup_queue_sites} b ON b.site_id = s.nid WHERE s.status = %d AND b.last_backup IS NULL', HOSTING_SITE_ENABLED);
+  while ($row = db_fetch_object($sites)) {
+    $timestamp = db_result(db_query("SELECT MAX(timestamp) FROM {hosting_site_backups} WHERE site = %d", $row->nid));
+    if (empty($timestamp)) {
+      $timestamp = 0;
+    }
+    hosting_backup_queue_backup_time_update($row->nid, $timestamp);
   }
 }
