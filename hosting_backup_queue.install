@@ -1,3 +1,26 @@
 <?php
 // $Id$
 
+/**
+ * Implemention of hook_install().
+ */
+function hosting_backup_queue_install() {
+  drupal_install_schema('hosting_backup_queue');
+}
+
+/**
+ * Implemention of hook_uninstall().
+ */
+function hosting_backup_queue_uninstall() {
+  drupal_uninstall_schema('hosting_backup_queue');
+}
+
+/**
+ * Implemention of hook_schema().
+ */
+function hosting_backup_queue_schema() {
+  $schema = array();
+
+
+  return $schema;
+}
