@@ -7,6 +7,6 @@
  */
 function hosting_backup_queue_post_hosting_backup_task($task, $data) {
   if ($data['context']['backup_file'] && $task->ref->type == 'site') {
-    // TOSO Record the timestamp of the backup in our central table.
+    // TODO Record the timestamp of the backup in our central table.
   }
 }
