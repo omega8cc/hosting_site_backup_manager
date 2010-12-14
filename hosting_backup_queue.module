@@ -296,7 +296,7 @@ function hosting_backup_queue_update($node) {
 * Implementation of hook_delete()
 */
 function hosting_backup_queue_delete($node) {
-  db_query("DELETE FROM {hosting_backup_queue_sites_settings} WHERE nid = %d", $node->nid);
+  db_query("DELETE FROM {hosting_backup_queue_sites_settings} WHERE site_id = %d", $node->nid);
 }
 
 /**
