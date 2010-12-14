@@ -80,9 +80,18 @@ function hosting_backup_queue_hosting_queues() {
 function hosting_backup_queue_queue($count) {
   $sites = _hosting_backup_queue_get_outstanding_backups($count);
   foreach ($sites as $site_id) {
-    $site_alias = hosting_context_name($site_id);
-    drush_backend_fork('hosting-task', array('@' . $site_alias, 'backup'));
+    if ($task = _hosting_backup_queue_get_backup_task($site_id)) {
+      drush_backend_fork('hosting-task', array($task->nid));
+    }
   }
+}
+
+/**
+ * Returns the backup task to run for a given site.
+ */
+function _hosting_backup_queue_get_backup_task($site) {
+  // Ensure that we have a backup task to run
+  return hosting_add_task($site, 'backup', array('description' => t('Automated backup')));
 }
 
 /**
