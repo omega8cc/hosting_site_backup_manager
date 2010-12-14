@@ -106,7 +106,7 @@ function _hosting_backup_queue_get_outstanding_backups($limit = 20) {
   while ($record = db_fetch_object($result)) {
     $all_sites_with_settings[] = $record->site_id;
     if ($record->status == 'enabled') {
-      if ($record->last_backup < time() - $record->schedule) {
+      if ($record->last_backup <= time() - $record->schedule) {
         $return[$record->last_backup] = $record->site_id;
       }
     }
@@ -118,7 +118,7 @@ function _hosting_backup_queue_get_outstanding_backups($limit = 20) {
     if (empty($all_sites_with_settings)) {
       $all_sites_with_settings[] = 0;
     }
-    $result = db_query("SELECT s.nid, b.last_backup FROM {hosting_site} s INNER JOIN {node} n ON s.vid = n.vid LEFT JOIN {hosting_backup_queue_sites} b ON b.site_id = s.nid WHERE s.status = %d AND b.last_backup < %d AND NOT(s.nid IN (" . db_placeholders($all_sites_with_settings) . ")) ORDER BY b.last_backup, n.nid ASC LIMIT %d", array_merge(array(HOSTING_SITE_ENABLED, time() - $interval), $all_sites_with_settings, array($limit)));
+    $result = db_query("SELECT s.nid, b.last_backup FROM {hosting_site} s INNER JOIN {node} n ON s.vid = n.vid LEFT JOIN {hosting_backup_queue_sites} b ON b.site_id = s.nid WHERE s.status = %d AND b.last_backup <= %d AND NOT(s.nid IN (" . db_placeholders($all_sites_with_settings) . ")) ORDER BY b.last_backup, n.nid ASC LIMIT %d", array_merge(array(HOSTING_SITE_ENABLED, time() - $interval), $all_sites_with_settings, array($limit)));
 
     while ($node = db_fetch_object($result)) {
       $return[$node->last_backup] =  $node->nid;
@@ -271,7 +271,7 @@ function hosting_backup_queue_update($node) {
         'status' => $node->hosting_backup_queue_status,
         'schedule' => $node->hosting_backup_queue_schedule,
       );
-      if (db_result(db_query('SELECT count(*) FROM {hosting_backup_queue_sites_settings} WHERE nid = %d', $node->nid))) {
+      if (db_result(db_query('SELECT count(*) FROM {hosting_backup_queue_sites_settings} WHERE site_id = %d', $node->nid))) {
         // Update
         drupal_write_record('hosting_backup_queue_sites_settings', $record, 'site_id');
       }
