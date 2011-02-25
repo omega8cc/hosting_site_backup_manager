@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * Implemention of hook_install().

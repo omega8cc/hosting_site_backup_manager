@@ -1,4 +1,3 @@
-; $Id$
 name = Backup queue
 decsrtiption = Allows hourly/daily/weekly scheduled backups of Aegir sites.
 core = 6.x
