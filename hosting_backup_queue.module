@@ -36,6 +36,7 @@ function hosting_backup_queue_settings() {
   $intervals = drupal_map_assoc(array(
     strtotime('1 hour', 0),
     strtotime('6 hours', 0),
+    strtotime('12 hours', 0),
     strtotime('1 day', 0),
     strtotime('7 days', 0),
     strtotime('28 days', 0),
@@ -233,6 +234,7 @@ function hosting_backup_queue_form_alter(&$form, $form_state, $form_id) {
     $intervals = drupal_map_assoc(array(
       strtotime('1 hour', 0),
       strtotime('6 hours', 0),
+      strtotime('12 hours', 0),
       strtotime('1 day', 0),
       strtotime('7 days', 0),
       strtotime('28 days', 0),
