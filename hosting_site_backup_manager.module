@@ -718,7 +718,7 @@ function hosting_backup_gc_queue($count) {
   foreach ($sites as $site) {
     // Get a list of backups.
     $backups = hosting_backup_gc_backup_list($site->nid);
-    $backups_to_remove = hosting_backuo_gc_compute_backups_to_remove($intervals, $backups);
+    $backups_to_remove = hosting_backup_gc_compute_backups_to_remove($intervals, $backups);
 
     // Add the backup delete task for the backups to remove
     if (!empty($backups_to_remove)) {
@@ -760,7 +760,7 @@ function hosting_backup_gc_backup_list($site) {
 /**
  * Compute which backups to remove.
  */
-function hosting_backuo_gc_compute_backups_to_remove($intervals, $backups) {
+function hosting_backup_gc_compute_backups_to_remove($intervals, $backups) {
   $to_remove = array();
 
   foreach ($intervals as $interval) {
