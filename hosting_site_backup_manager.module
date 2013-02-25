@@ -85,7 +85,6 @@ function hosting_site_backup_manager_menu() {
     'type' => MENU_CALLBACK,
   );
 
-
   return $items;
 }
 
@@ -145,7 +144,6 @@ function hosting_site_backup_manager_confirm_delete($form_state, $filename, $sit
   // Get the backup data.
   $source = db_fetch_object(db_query("SELECT * FROM {hosting_site_backups} WHERE site=%d AND bid=%d", $sitenid, $bid));
 
-
   // Build the form.
   $form = array();
   $form['#filename'] = $filename;
@@ -164,7 +162,6 @@ function hosting_site_backup_manager_confirm_delete($form_state, $filename, $sit
     '#value' => t('Backup was created on:<br /> %date', array('%date' => format_date($source->timestamp, 'short'))) . '<br /><br />',
     '#weight' => -8,
   );
-
 
   // Build the confirmation form.
   $form = confirm_form(
@@ -195,7 +192,7 @@ function hosting_site_backup_manager_confirm_delete_submit($form, &$form_state) 
   $bid = $form['#bid'];
 
   // Add the hosting task.
-  hosting_add_task($sitenid, 'backup_delete', array($bid => $filename));
+  hosting_add_task($sitenid, 'backup-delete', array($bid => $filename));
 
   $form_state['redirect'] = 'node/' . $sitenid . '/backup';
   modalframe_close_dialog();
@@ -245,7 +242,6 @@ function hosting_site_backup_manager_confirm_restore($form_state, $sitenid, $bid
   // Get the backup data.
   $source = db_fetch_object(db_query("SELECT * FROM {hosting_site_backups} WHERE site=%d AND bid=%d", $sitenid, $bid));
 
-
   // Not the best formatted code, but suffices for now.
   $form['explanation'] = array(
     '#type' => 'markup',
@@ -258,7 +254,6 @@ function hosting_site_backup_manager_confirm_restore($form_state, $sitenid, $bid
     '#value' => t('Backup was created on:<br /> %date', array('%date' => format_date($source->timestamp, 'short'))) . '<br /><br />',
     '#weight' => -8,
   );
-
 
   // Build the confirmation form.
   $form = confirm_form(
@@ -287,7 +282,6 @@ function hosting_site_backup_manager_confirm_restore_submit($form, &$form_state)
   hosting_add_task($sitenid, 'restore', array('bid' => $bid));
   $form_state['redirect'] = 'node/' . $sitenid . '/backup';
   modalframe_close_dialog();
-
 }
 
 /**
@@ -304,6 +298,13 @@ function hosting_site_backup_manager_export($site, $bid) {
   drupal_goto('node/' . $site->nid . '/backups');
 }
 
+/**
+ * Helper function to get the Aegir root directory.
+ */
+function _hosting_site_backup_manager_getaegirroot() {
+  $aegirroot = variable_get('hosting_site_backup_manager_base_path', '/var/aegir');
+  return $aegirroot;
+}
 
 /**
  * Function to download a backup file.
@@ -330,7 +331,6 @@ function hosting_site_backup_manager_download($site, $bid) {
     $symlink = $docroot . '/backup-exports/' . $client->uname . '/' . basename($source->filename);
 
     if ($fd = @fopen($symlink, 'rb')) {
-
       // Construct filename.
       $filename = basename($source->filename);
 
@@ -378,9 +378,7 @@ function hosting_site_backup_manager_page($site) {
   drupal_add_js($settings, 'setting');
 
   $output = '<div id="hosting-site-backup-manager-backupstable">';
-
   $output .= hosting_site_backup_manager_backups_table($site);
-
   $output .= '</div>';
 
   return $output;
@@ -404,6 +402,10 @@ function hosting_site_backup_manager_backups_table($site) {
   // Determine client name.
   $client = hosting_client_node_load($site->client);
 
+  // Determine site's profile name
+  $profile = node_load($site->profile);
+  $ishostmaster = ($profile->short_name == 'hostmaster');
+
   $headers[] = t('Backup');
   $headers[] = array('data' => t('Actions'), 'class' => 'hosting-actions');
 
@@ -411,7 +413,7 @@ function hosting_site_backup_manager_backups_table($site) {
 
   // Only allow actions when there's no backup delete or
   // restore task running for this node.
-  $buttonstatus = !(hosting_task_outstanding($site->nid, 'backup_delete') || hosting_task_outstanding($site->nid, 'restore') || hosting_task_outstanding($site->nid, 'export_backup') || hosting_task_outstanding($site->nid, 'remove_export_backup'));
+  $buttonstatus = !(hosting_task_outstanding($site->nid, 'backup-delete') || hosting_task_outstanding($site->nid, 'restore') || hosting_task_outstanding($site->nid, 'export_backup') || hosting_task_outstanding($site->nid, 'remove_export_backup'));
 
   // TODO Make the table reload automatically.
   $result = db_query("SELECT bid, description, filename, size, timestamp FROM {hosting_site_backups} WHERE site=%d ORDER BY timestamp DESC", $site->nid);
@@ -424,6 +426,11 @@ function hosting_site_backup_manager_backups_table($site) {
     );
 
     $output .= '&nbsp;' . l(t('Create backup'), 'node/' . $site->nid . '/site_backup', $options);
+    return $output;
+  }
+
+  if (!empty($ishostmaster)) {
+    $output = t("Feature not available for the Hostmaster site.");
     return $output;
   }
 
@@ -443,8 +450,10 @@ function hosting_site_backup_manager_backups_table($site) {
 
     /* Add delete button */
     $actions['delete'] = _hosting_task_button(t('Delete'), 'node/' . $site->nid . '/backup/delete/' . $object->bid, t('Delete the backup'), '', $buttonstatus, TRUE, FALSE);
-    /* Add restore button */
-    $actions['restore'] = _hosting_task_button(t('Restore'), 'node/' . $site->nid . '/backup/restore/' . $object->bid, t('Restore the backup'), '', $buttonstatus, TRUE, FALSE);
+
+    /* Add restore button only for non-Hostmaster sites */
+    $restorestatus = ($buttonstatus && !$ishostmaster);
+    $actions['restore'] = _hosting_task_button(t('Restore'), 'node/' . $site->nid . '/backup/restore/' . $object->bid, t('Restore the backup'), '', $restorestatus, TRUE, FALSE);
 
     $row['actions'] = array(
       'data' => implode('', $actions),
@@ -481,16 +490,7 @@ function hosting_site_backup_manager_hosting_tasks() {
     'hidden' => TRUE,
   );
 
-
   return $tasks;
-}
-
-/**
- * Helper function to get the Aegir root directory.
- */
-function _hosting_site_backup_manager_getaegirroot() {
-  // TODO: Make it a variable or determine it from $_SERVER['DOCUMENT_ROOT']
-  return '/var/aegir';
 }
 
 /**
@@ -508,8 +508,6 @@ function _hosting_site_backup_manager_isfileavailable($site, $bid) {
 
     // Get Document Root.
     $docroot = _hosting_site_backup_manager_getaegirroot();
-
-
     $file = $docroot . '/backup-exports/' . $client->uname . '/' . basename($source->filename);
 
     if (file_exists($file)) {
@@ -576,11 +574,17 @@ function hosting_site_backup_manager_cron() {
   }
 }
 
-
 /**
  * Configuration form for backup schedules
  */
 function hosting_site_backup_manager_settings() {
+  $form['hosting_site_backup_manager_base_path'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Aegir root directory'),
+    '#description' => t('The root directory of your Aegir instance, i.e. /var/aegir - no trailing slash!'),
+    '#default_value' => variable_get('hosting_site_backup_manager_base_path', '/var/aegir'),
+  );
+
   $form['hosting_backup_gc_default_enabled'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable backup garbage collection'),
@@ -591,7 +595,7 @@ function hosting_site_backup_manager_settings() {
   $intervals = array(
     '' => t('n/a'),
     strtotime('1 hour', 0) => t('Hours'),
-    strtotime('1 day', 0) => t('Days'),
+    strtotime('1 day',  0) => t('Days'),
     strtotime('1 week', 0) => t('Weeks'),
     strtotime('1 year', 0) => t('Years'),
   );
@@ -609,7 +613,6 @@ function hosting_site_backup_manager_settings() {
       'number' => 1,
       'interval' => '',
     ),
-
   );
 
   $form['hosting_backup_gc_intervals'] = array(
@@ -715,17 +718,15 @@ function hosting_backup_gc_queue($count) {
   foreach ($sites as $site) {
     // Get a list of backups.
     $backups = hosting_backup_gc_backup_list($site->nid);
-
     $backups_to_remove = hosting_backuo_gc_compute_backups_to_remove($intervals, $backups);
 
     // Add the backup delete task for the backups to remove
     if (!empty($backups_to_remove)) {
-      hosting_add_task($site->nid, 'backup_delete', $backups_to_remove);
+      hosting_add_task($site->nid, 'backup-delete', $backups_to_remove);
     }
 
     hosting_backup_gc_site_touch($site->nid);
   }
-
 }
 
 /**
@@ -827,7 +828,6 @@ function hosting_site_backup_manager_theme() {
  */
 function theme_hosting_backup_gc_intervals_table($form) {
   $output = '';
-
   $rows = array();
 
   foreach (element_children($form) as $i) {
@@ -836,12 +836,10 @@ function theme_hosting_backup_gc_intervals_table($form) {
     $row[] = drupal_render($form[$i]['older_than']);
     $row[] = t('Keep 1 backup per');
     $row[] = drupal_render($form[$i]['keep_per']);
-
     $rows[] = $row;
   }
 
   $output .= theme('table', NULL, $rows);
-
   $output .= drupal_render($form);
   return $output;
 }
