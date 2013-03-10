@@ -840,7 +840,7 @@ function hosting_site_backup_manager_theme() {
  */
 function theme_hosting_backup_gc_intervals_table($form) {
   $output = '';
-  drupal_add_css(drupal_get_path('module', 'hosting_site_backup') . '/hosting_site_backup_manager.admin.css');
+  drupal_add_css(drupal_get_path('module', 'hosting_site_backup_manager') . '/hosting_site_backup_manager.admin.css');
   $rows = array();
 
   foreach (element_children($form) as $i) {
