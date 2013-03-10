@@ -629,24 +629,36 @@ function hosting_site_backup_manager_settings() {
       '#type' => 'select',
       '#options' => drupal_map_assoc(range(1, 365)),
       '#default_value' => isset($interval['older_than']['number']) ? $interval['older_than']['number'] : 1,
+      '#attributes' => array(
+        'class' => 'hosting-backup-gc-inline',
+      ),
     );
 
     $form['hosting_backup_gc_intervals'][$i]['older_than']['interval'] = array(
       '#type' => 'select',
       '#options' => $intervals,
       '#default_value' => isset($interval['older_than']['interval']) ? $interval['older_than']['interval'] : '',
+      '#attributes' => array(
+        'class' => 'hosting-backup-gc-inline',
+      ),
     );
 
     $form['hosting_backup_gc_intervals'][$i]['keep_per']['number'] = array(
       '#type' => 'select',
       '#options' => drupal_map_assoc(range(1, 365)),
       '#default_value' => isset($interval['keep_per']['number']) ? $interval['keep_per']['number'] : 1,
+      '#attributes' => array(
+        'class' => 'hosting-backup-gc-inline',
+      ),
     );
 
     $form['hosting_backup_gc_intervals'][$i]['keep_per']['interval'] = array(
       '#type' => 'select',
       '#options' => $intervals,
       '#default_value' => isset($interval['keep_per']['interval']) ? $interval['keep_per']['interval'] : '',
+      '#attributes' => array(
+        'class' => 'hosting-backup-gc-inline',
+      ),
     );
 
     $i++;
@@ -828,13 +840,14 @@ function hosting_site_backup_manager_theme() {
  */
 function theme_hosting_backup_gc_intervals_table($form) {
   $output = '';
+  drupal_add_css(drupal_get_path('module', 'hosting_site_backup') . '/hosting_site_backup_manager.admin.css');
   $rows = array();
 
   foreach (element_children($form) as $i) {
     $row = array();
-    $row[] = t('For backups older than');
+    $row[] = array('data' => t('For backups older than'), 'class' => 'hosting-backup-gc-narrow-first');
     $row[] = drupal_render($form[$i]['older_than']);
-    $row[] = t('Keep 1 backup per');
+    $row[] = array('data' => t('Keep 1 backup per'), 'class' => 'hosting-backup-gc-narrow-second');
     $row[] = drupal_render($form[$i]['keep_per']);
     $rows[] = $row;
   }
