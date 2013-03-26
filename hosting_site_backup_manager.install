@@ -4,7 +4,10 @@
  * Implemention of hook_install().
  */
 function hosting_site_backup_manager_install() {
-  drupal_install_schema('hosting_backup_gc');
+  // Check before adding the table, former users of the hosting_backup_gc module could have this table already
+  if (!db_table_exists('hosting_backup_gc')) {
+    drupal_install_schema('hosting_backup_gc');
+  }
 }
 
 /**
