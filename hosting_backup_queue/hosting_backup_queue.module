@@ -1,55 +1,11 @@
 <?php
 
-/**
- * Implementation of hook_menu
- */
-function hosting_backup_queue_menu() {
-  $items['admin/hosting/backup_queue'] = array(
-    'title' => 'Backup schedule settings',
-    'description' => 'Configure scheduled backups for hosted sites',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('hosting_backup_queue_settings'),
-    'access arguments' => array('administer hosting backup queue'),
-    'type' => MENU_LOCAL_TASK
-  );
-  return $items;
-}
 
 /**
  * Implementation of hook_perm
  */
 function hosting_backup_queue_perm() {
   return array('create backup schedules', 'administer hosting backup queue');
-}
-
-/**
- * Configuration form for backup schedules
- */
-function hosting_backup_queue_settings() {
-  $form['hosting_backup_queue_default_enabled'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Backup sites by default'),
-    '#description' => t('Sites without a specific backup schedule specified will get the settings here. These settings can be overriden by configuring specific sites.'),
-    '#default_value' => variable_get('hosting_backup_queue_default_enabled', TRUE),
-  );
-
-  $intervals = drupal_map_assoc(array(
-    strtotime('1 hour', 0),
-    strtotime('6 hours', 0),
-    strtotime('12 hours', 0),
-    strtotime('1 day', 0),
-    strtotime('7 days', 0),
-    strtotime('28 days', 0),
-    strtotime('1 year', 0),
-    ), 'format_interval');
-
-  $form['hosting_backup_queue_default_interval'] = array(
-    '#type' => 'select',
-    '#title' => t('Default backup interval'),
-    '#default_value' => variable_get('hosting_backup_queue_default_interval', strtotime('1 day', 0)),
-    '#options' => $intervals,
-  );
-  return system_settings_form($form);
 }
 
 /**
@@ -249,6 +205,35 @@ function hosting_backup_queue_form_alter(&$form, $form_state, $form_id) {
       '#options' => $intervals,
     );
     return $form;
+  }
+
+  if ($form_id == 'hosting_site_backup_manager_settings' && user_access('administer hosting backup queue')) {
+    $form['hosting_backup_queue_default_enabled'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Backup sites by default'),
+      '#description' => t('Sites without a specific backup schedule specified will get the settings here. These settings can be overriden by configuring specific sites.'),
+      '#default_value' => variable_get('hosting_backup_queue_default_enabled', TRUE),
+      '#weight' => -10,
+    );
+
+    $intervals = drupal_map_assoc(array(
+      strtotime('1 hour', 0),
+      strtotime('6 hours', 0),
+      strtotime('12 hours', 0),
+      strtotime('1 day', 0),
+      strtotime('7 days', 0),
+      strtotime('28 days', 0),
+      strtotime('1 year', 0),
+      ), 'format_interval');
+
+    $form['hosting_backup_queue_default_interval'] = array(
+      '#type' => 'select',
+      '#title' => t('Default backup interval'),
+      '#default_value' => variable_get('hosting_backup_queue_default_interval', strtotime('1 day', 0)),
+      '#options' => $intervals,
+      '#weight' => -9,
+    );
+
   }
 }
 
