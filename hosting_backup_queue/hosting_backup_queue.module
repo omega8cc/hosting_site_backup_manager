@@ -213,7 +213,7 @@ function hosting_backup_queue_form_alter(&$form, $form_state, $form_id) {
       '#title' => t('Backup sites by default'),
       '#description' => t('Sites without a specific backup schedule specified will get the settings here. These settings can be overriden by configuring specific sites.'),
       '#default_value' => variable_get('hosting_backup_queue_default_enabled', TRUE),
-      '#weight' => -10,
+      '#weight' => -19,
     );
 
     $intervals = drupal_map_assoc(array(
@@ -231,7 +231,7 @@ function hosting_backup_queue_form_alter(&$form, $form_state, $form_id) {
       '#title' => t('Default backup interval'),
       '#default_value' => variable_get('hosting_backup_queue_default_interval', strtotime('1 day', 0)),
       '#options' => $intervals,
-      '#weight' => -9,
+      '#weight' => -20,
     );
 
   }

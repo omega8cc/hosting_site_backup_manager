@@ -583,6 +583,7 @@ function hosting_site_backup_manager_settings() {
     '#title' => t('Aegir root directory'),
     '#description' => t('The root directory of your Aegir instance, i.e. /var/aegir - no trailing slash!'),
     '#default_value' => variable_get('hosting_site_backup_manager_base_path', '/var/aegir'),
+      '#weight' => -30,
   );
 
   $form['hosting_backup_gc_default_enabled'] = array(
