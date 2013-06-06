@@ -3,3 +3,4 @@ description = Allows hourly/daily/weekly scheduled backups of Aegir sites.
 core = 6.x
 package = Hosting
 dependencies[] = hosting_site
+dependencies[] = hosting_site_backup_manager
