@@ -622,6 +622,15 @@ function hosting_site_backup_manager_settings() {
     '#element_validate' => array('hosting_backup_gc_intervals_element_validate'),
   );
 
+    $form['hosting_backup_gc_intervals']['example'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Example'),
+    '#weight' => 5,
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#description' => _hosting_backup_gc_example(),
+  );
+
   $i = 0;
 
   foreach ($default_intervals as $interval) {
@@ -855,5 +864,104 @@ function theme_hosting_backup_gc_intervals_table($form) {
 
   $output .= theme('table', NULL, $rows);
   $output .= drupal_render($form);
+  return $output;
+}
+
+
+/**
+ * Generate example tekst for garbage collection intervals.
+ *
+ * @return string HTML
+ */
+function _hosting_backup_gc_example() {
+  $now = time();
+
+  // Introduction text
+  $output = '<p>' . t("This page provides an example of how the current backup garbage collection settings affect stored backups.") . '<br />';
+  $output .= t("The backups listed below are dummies (they don't represent real backups), but they show how many backups would be kept for a typical site over a given period.") . '</p>';
+
+  // Get current interval settings
+  $intervals = variable_get('hosting_backup_gc_intervals', array());
+  ksort($intervals);
+  if (empty($intervals)) {
+    $output .= '<p>' . t('<strong>No garbage collection intervals found.</strong> Please configure some options first.') . '</p>';
+    return $output;
+  }
+
+  // Get history (how long ago to display backups for)
+  $interval_keys = array_keys($intervals);
+  rsort($interval_keys);
+  $id = $interval_keys[0];
+  $history = ($intervals[$id]['older_than']['number'] * $intervals[$id]['older_than']['interval']) + ($intervals[$id]['keep_per']['number'] * $intervals[$id]['keep_per']['interval'] * 5);
+
+  // Get backup queue configuration
+  $default_backup_interval = variable_get('hosting_backup_queue_default_interval', strtotime('1 day', 0));
+  $period = array();
+  switch ($default_backup_interval) {
+    case '3600':
+      $period['value'] = -1;
+      $period['unit'] = 'hours';
+      break;
+    case '21600':
+      $period['value'] = -6;
+      $period['unit'] = 'hours';
+      break;
+    case '43200':
+      $period['value'] = -12;
+      $period['unit'] = 'hours';
+      break;
+    case '86400':
+      $period['value'] = -1;
+      $period['unit'] = 'days';
+      break;
+    case '604800':
+      $period['value'] = -1;
+      $period['unit'] = 'weeks';
+      break;
+    case '2419200':
+      $period['value'] = -4;
+      $period['unit'] = 'weeks';
+      break;
+    case '31536000':
+      $period['value'] = -1;
+      $period['unit'] = 'years';
+      break;
+  }
+
+  // Create a list of dummy backups (based on the default interval)
+  $number_backups = $history / $default_backup_interval;
+  $backups = array();
+  $i = 0;
+  while ($i < $number_backups) {
+    $backups[$i]['time'] = strtotime(($period['value'] * $i) . ' ' . $period['unit']);
+    $backups[$i]['date'] = date('Y-m-d H:i:s', $backups[$i]['time']);
+    $i++;
+  }
+
+  // Delete dummy backups based on configured intervals
+  foreach ($intervals as $interval) {
+    $pockets = array();
+    foreach ($backups as $id => $backup) {
+      if ($backup['time'] < ($now - $interval['older_than']['number'] * $interval['older_than']['interval'])) {
+        $pocket = floor($backup['time'] / ($interval['keep_per']['number'] * $interval['keep_per']['interval']));
+        if (empty($pockets[$pocket])) {
+          $pockets[$pocket] = TRUE;
+        }
+        else {
+          unset($backups[$id]);
+        }
+      }
+    }
+  }
+
+  // Get list of backup dates
+  $items = array();
+  foreach ($backups as $backup) {
+    $items[] = $backup['date'];
+  }
+  $items[] = '...';
+
+  // Display remaining backups
+  $output .= theme('item_list', $items, t('Backups'));
   return $output;
 }
