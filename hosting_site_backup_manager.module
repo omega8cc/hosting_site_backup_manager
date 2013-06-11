@@ -586,13 +586,34 @@ function hosting_site_backup_manager_settings() {
       '#weight' => -30,
   );
 
-  $form['hosting_backup_gc_default_enabled'] = array(
+  $form['garbage_collection'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Garbage colleciton'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+
+  $form['garbage_collection']['hosting_backup_gc_default_enabled'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable backup garbage collection'),
     '#description' => t('Set the options below before enabling the garbage collection of old backups.'),
     '#default_value' => variable_get('hosting_backup_gc_default_enabled', FALSE),
   );
 
+  $form['garbage_collection']['hosting_backup_gc_intervals'] = array(
+    '#tree' => TRUE,
+    '#theme' => 'hosting_backup_gc_intervals_table',
+    '#element_validate' => array('hosting_backup_gc_intervals_element_validate'),
+  );
+
+  $form['garbage_collection']['hosting_backup_gc_intervals']['example'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Example'),
+    '#weight' => 5,
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#description' => _hosting_backup_gc_example(),
+  );
   $intervals = array(
     '' => t('n/a'),
     strtotime('1 hour', 0) => t('Hours'),
@@ -616,26 +637,11 @@ function hosting_site_backup_manager_settings() {
     ),
   );
 
-  $form['hosting_backup_gc_intervals'] = array(
-    '#tree' => TRUE,
-    '#theme' => 'hosting_backup_gc_intervals_table',
-    '#element_validate' => array('hosting_backup_gc_intervals_element_validate'),
-  );
-
-    $form['hosting_backup_gc_intervals']['example'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Example'),
-    '#weight' => 5,
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#description' => _hosting_backup_gc_example(),
-  );
-
   $i = 0;
 
   foreach ($default_intervals as $interval) {
 
-    $form['hosting_backup_gc_intervals'][$i]['older_than']['number'] = array(
+    $form['garbage_collection']['hosting_backup_gc_intervals'][$i]['older_than']['number'] = array(
       '#type' => 'select',
       '#options' => drupal_map_assoc(range(1, 365)),
       '#default_value' => isset($interval['older_than']['number']) ? $interval['older_than']['number'] : 1,
@@ -644,7 +650,7 @@ function hosting_site_backup_manager_settings() {
       ),
     );
 
-    $form['hosting_backup_gc_intervals'][$i]['older_than']['interval'] = array(
+    $form['garbage_collection']['hosting_backup_gc_intervals'][$i]['older_than']['interval'] = array(
       '#type' => 'select',
       '#options' => $intervals,
       '#default_value' => isset($interval['older_than']['interval']) ? $interval['older_than']['interval'] : '',
@@ -653,7 +659,7 @@ function hosting_site_backup_manager_settings() {
       ),
     );
 
-    $form['hosting_backup_gc_intervals'][$i]['keep_per']['number'] = array(
+    $form['garbage_collection']['hosting_backup_gc_intervals'][$i]['keep_per']['number'] = array(
       '#type' => 'select',
       '#options' => drupal_map_assoc(range(1, 365)),
       '#default_value' => isset($interval['keep_per']['number']) ? $interval['keep_per']['number'] : 1,
@@ -662,7 +668,7 @@ function hosting_site_backup_manager_settings() {
       ),
     );
 
-    $form['hosting_backup_gc_intervals'][$i]['keep_per']['interval'] = array(
+    $form['garbage_collection']['hosting_backup_gc_intervals'][$i]['keep_per']['interval'] = array(
       '#type' => 'select',
       '#options' => $intervals,
       '#default_value' => isset($interval['keep_per']['interval']) ? $interval['keep_per']['interval'] : '',
@@ -678,7 +684,7 @@ function hosting_site_backup_manager_settings() {
 }
 
 function hosting_backup_gc_intervals_element_validate($element, &$form_state) {
-  $values = $form_state['values'][$element['#parents'][0]];
+  $values = $form_state['values']['garbage_collection'][$element['#parents'][0]];
 
   // Build an array of the non-empty ones.
   $new_values = array();
@@ -854,6 +860,9 @@ function theme_hosting_backup_gc_intervals_table($form) {
   $rows = array();
 
   foreach (element_children($form) as $i) {
+    if ($form[$i]['#type'] == 'fieldset') {
+      continue;
+    }
     $row = array();
     $row[] = array('data' => t('For backups older than'), 'class' => 'hosting-backup-gc-narrow-first');
     $row[] = drupal_render($form[$i]['older_than']);
