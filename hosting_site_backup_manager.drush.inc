@@ -55,6 +55,14 @@ function drush_hosting_site_backup_manager_pre_hosting_task($task) {
 function drush_hosting_site_backup_manager_provision_export_backup($backup) {
   drush_log(dt('Start export backup command'), 'ok');
 
+  $site = d();
+  // Test the context, when a site is delete we get a server context instead.
+  if (!($site instanceof Provision_Context_site)) {
+    return drush_set_error('DRUSH_PROVISION_CONTEXT_MISSING',
+      dt('Site context not available')
+    );
+  }
+
   // Path for exported backups.
   $backupdir = d()->platform->server->aegir_root . '/backup-exports';
   if (!is_dir($backupdir)) {
