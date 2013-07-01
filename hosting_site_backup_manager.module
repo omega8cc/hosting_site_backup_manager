@@ -447,14 +447,14 @@ function hosting_site_backup_manager_backups_table($site) {
     $actions['download'] = _hosting_task_button(t('Get'), 'node/' . $site->nid . '/backup/download/' . $object->bid, t('Download the backup'), '', $downloadstatus, FALSE, FALSE);
 
     /* Add export backup button */
-    $exportstatus = ($buttonstatus && !$downloadstatus && $isdeleted);
+    $exportstatus = ($buttonstatus && !$downloadstatus && !$isdeleted);
     $actions['export_backup'] = _hosting_task_button(t('Export'), 'node/' . $site->nid . '/backup/export/' . $object->bid, t('Make the backup exportable'), '', $exportstatus, FALSE, FALSE);
 
     /* Add delete button */
     $actions['delete'] = _hosting_task_button(t('Delete'), 'node/' . $site->nid . '/backup/delete/' . $object->bid, t('Delete the backup'), '', $buttonstatus, TRUE, FALSE);
 
     /* Add restore button only for non-Hostmaster, non-deleted sites */
-    $restorestatus = ($buttonstatus && !$ishostmaster && $isdeleted);
+    $restorestatus = ($buttonstatus && !$ishostmaster && !$isdeleted);
     $actions['restore'] = _hosting_task_button(t('Restore'), 'node/' . $site->nid . '/backup/restore/' . $object->bid, t('Restore the backup'), '', $restorestatus, TRUE, FALSE);
 
     $row['actions'] = array(
