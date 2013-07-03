@@ -64,7 +64,7 @@ function drush_hosting_site_backup_manager_provision_export_backup($backup) {
   }
 
   // Path for exported backups.
-  $backupdir = d()->platform->server->aegir_root . '/backup-exports';
+  $backupdir = '/var/aegir/backup-exports';
   if (!is_dir($backupdir)) {
     provision_file()->create_dir($backupdir, dt('General backup export directory'), 0751);
   }
@@ -75,7 +75,7 @@ function drush_hosting_site_backup_manager_provision_export_backup($backup) {
     provision_file()->create_dir($clientbackupdir, dt('Client backup export directory '), 0751);
   }
 
-  if (drush_shell_cd_and_exec($clientbackupdir, 'ln %s .', $backup)) {
+  if (drush_shell_cd_and_exec($backupdir, 'ln %s .', $backup)) {
     drush_log(dt('Backup exported', array()), 'ok');
   }
   else {
@@ -83,7 +83,7 @@ function drush_hosting_site_backup_manager_provision_export_backup($backup) {
     return drush_set_error('DRUSH_PROVISION_EXPORT_BACKUP_FAILED',
       dt("Drush was unable to export the backup.\nThe specific errors are below:\n!errors",
       array(
-        '!path' => $clientbackupdir,
+        '!path' => $backupdir,
         '!errors' => implode("\n", drush_shell_exec_output()))
       )
     );
@@ -100,10 +100,7 @@ function drush_hosting_site_backup_manager_provision_remove_export_backup($expor
   // Path for exported backups.
   $backupdir = d()->platform->server->aegir_root . '/backup-exports';
 
-  // Path for client exported backups.
-  $clientbackupdir = $backupdir . '/' . d()->client_name;
-
-  if (drush_shell_cd_and_exec($clientbackupdir, 'rm %s', $export)) {
+  if (drush_shell_cd_and_exec($backupdir, 'rm %s', $export)) {
     drush_log(dt('Backup export removed', array()), 'ok');
   }
   else {
@@ -111,7 +108,7 @@ function drush_hosting_site_backup_manager_provision_remove_export_backup($expor
     return drush_set_error('DRUSH_PROVISION_REMOVE_EXPORT_BACKUP_FAILED',
       dt("Drush was unable to remove the export of the backup.\nThe specific errors are below:\n!errors",
       array(
-        '!path' => $clientbackupdir,
+        '!path' => $backupdir,
         '!errors' => implode("\n", drush_shell_exec_output()))
       )
     );
