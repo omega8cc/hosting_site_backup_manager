@@ -47,8 +47,6 @@ function hosting_site_backup_manager_schema() {
 }
 
 /**
- * Implementation of hook_update_N().
- *
  * Adds a table to record the gc times for sites.
  */
 function hosting_site_backup_manager_update_6101() {
