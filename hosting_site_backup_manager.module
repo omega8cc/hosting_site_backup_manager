@@ -307,6 +307,15 @@ function _hosting_site_backup_manager_getaegirroot() {
 }
 
 /**
+ * Helper function to get the root directory where backups are exported.
+ * @todo: make this configurable again, the provision_site_backup_manager needs to be in sync.
+ */
+function _hosting_site_backup_manager_get_backup_export_root() {
+  $root = '/var/aegir/backup-exports';
+  return $root;
+}
+
+/**
  * Function to download a backup file.
  *
  * @param node $site
@@ -325,10 +334,8 @@ function hosting_site_backup_manager_download($site, $bid) {
     // Determine client name.
     $client = hosting_client_node_load($site->client);
 
-    // Get Document Root.
-    $docroot = _hosting_site_backup_manager_getaegirroot();
-
-    $symlink = $docroot . '/backup-exports/' . $client->uname . '/' . basename($source->filename);
+    $backup_root = _hosting_site_backup_manager_get_backup_export_root();
+    $symlink = $backup_root . '/' . $client->uname . '/' . basename($source->filename);
 
     if ($fd = @fopen($symlink, 'rb')) {
       // Construct filename.
@@ -509,8 +516,8 @@ function _hosting_site_backup_manager_isfileavailable($site, $bid) {
     $client = hosting_client_node_load($site->client);
 
     // Get Document Root.
-    $docroot = _hosting_site_backup_manager_getaegirroot();
-    $file = $docroot . '/backup-exports/' . $client->uname . '/' . basename($source->filename);
+    $root = _hosting_site_backup_manager_get_backup_export_root();
+    $file = $root . '/' . $client->uname . '/' . basename($source->filename);
 
     if (file_exists($file)) {
       return TRUE;
@@ -529,9 +536,8 @@ function _hosting_site_backup_manager_isfileavailable($site, $bid) {
  */
 function hosting_site_backup_manager_cron() {
   // Get Document Root.
-  $docroot = _hosting_site_backup_manager_getaegirroot();
+  $backup_root = _hosting_site_backup_manager_get_backup_export_root();
   $backup_export_expire_timeout = 60 * 10;
-  $backup_root = $file = $docroot . '/backup-exports/';
   if (!is_dir($backup_root)) {
     return;
   }
