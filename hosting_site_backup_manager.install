@@ -60,3 +60,14 @@ function hosting_site_backup_manager_update_6101() {
 
   return $ret;
 }
+
+/**
+ * Remove the obsolete variable hosting_site_backup_manager_base_path
+ */
+function hosting_site_backup_manager_update_6201() {
+  $ret = array();
+
+  variable_del('hosting_site_backup_manager_base_path');
+
+  return $ret;
+}
