@@ -331,11 +331,8 @@ function hosting_site_backup_manager_download($site, $bid) {
   $source = db_fetch_object(db_query("SELECT filename FROM {hosting_site_backups} WHERE site=%d AND bid=%d ORDER BY timestamp DESC", $site->nid, $bid));
 
   if ($source) {
-    // Determine client name.
-    $client = hosting_client_node_load($site->client);
-
     $backup_root = _hosting_site_backup_manager_get_backup_export_root();
-    $symlink = $backup_root . '/' . $client->uname . '/' . basename($source->filename);
+    $symlink = $backup_root . '/' . basename($source->filename);
 
     if ($fd = @fopen($symlink, 'rb')) {
       // Construct filename.
@@ -454,7 +451,7 @@ function hosting_site_backup_manager_backups_table($site) {
     $actions['download'] = _hosting_task_button(t('Get'), 'node/' . $site->nid . '/backup/download/' . $object->bid, t('Download the backup'), '', $downloadstatus, FALSE, FALSE);
 
     /* Add export backup button */
-    $exportstatus = ($buttonstatus && !$downloadstatus && !$isdeleted);
+    $exportstatus = ($buttonstatus && !$downloadstatus);
     $actions['export_backup'] = _hosting_task_button(t('Export'), 'node/' . $site->nid . '/backup/export/' . $object->bid, t('Make the backup exportable'), '', $exportstatus, FALSE, FALSE);
 
     /* Add delete button */
@@ -512,12 +509,9 @@ function _hosting_site_backup_manager_isfileavailable($site, $bid) {
   $source = db_fetch_object(db_query("SELECT filename FROM {hosting_site_backups} WHERE site=%d AND bid=%d ORDER BY timestamp DESC", $site->nid, $bid));
 
   if ($source) {
-    // Determine client name.
-    $client = hosting_client_node_load($site->client);
-
     // Get Document Root.
     $root = _hosting_site_backup_manager_get_backup_export_root();
-    $file = $root . '/' . $client->uname . '/' . basename($source->filename);
+    $file = $root . '/' . basename($source->filename);
 
     if (file_exists($file)) {
       return TRUE;
