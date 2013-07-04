@@ -56,7 +56,7 @@ function drush_hosting_site_backup_manager_provision_export_backup($backup) {
   drush_log(dt('Start export backup command'), 'ok');
 
   // Path for exported backups.
-  $backupdir = '/var/aegir/backup-exports';
+  $backupdir = _provision_site_backup_manager_get_backup_export_root();
   if (!is_dir($backupdir)) {
     provision_file()->create_dir($backupdir, dt('General backup export directory'), 0751);
   }
@@ -84,7 +84,7 @@ function drush_hosting_site_backup_manager_provision_remove_export_backup($expor
   drush_log(dt('Start remove export backup command'), 'ok');
 
   // Path for exported backups.
-  $backupdir = '/var/aegir/backup-exports';
+  $backupdir = _provision_site_backup_manager_get_backup_export_root();
 
   if (drush_shell_cd_and_exec($backupdir, 'rm %s', $export)) {
     drush_log(dt('Backup export removed', array()), 'ok');
@@ -99,4 +99,13 @@ function drush_hosting_site_backup_manager_provision_remove_export_backup($expor
       )
     );
   }
+}
+
+/**
+ * Helper function to get the root directory where backups are exported.
+ * @todo: make this configurable again, the hosting_site_backup_manager needs to be in sync.
+ */
+function _provision_site_backup_manager_get_backup_export_root() {
+  $root = '/var/aegir/backup-exports';
+  return $root;
 }
