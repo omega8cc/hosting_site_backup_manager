@@ -671,7 +671,7 @@ function hosting_site_backup_manager_settings() {
 }
 
 function hosting_backup_gc_intervals_element_validate($element, &$form_state) {
-  $values = $form_state['values']['garbage_collection'][$element['#parents'][0]];
+  $values = $form_state['values'][$element['#parents'][0]];
 
   // Build an array of the non-empty ones.
   $new_values = array();
