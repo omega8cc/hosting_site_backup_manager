@@ -1,38 +1,46 @@
 <?php
+/**
+ * @file
+ * Install, update and uninstall functions for the hosting_site_backup_manager module.
+ *
+ */
+
 
 /**
- * Implemention of hook_install().
+ * Implements hook_install().
  */
 function hosting_site_backup_manager_install() {
   // Check before adding the table, former users of the hosting_backup_gc module could have this table already
   if (!db_table_exists('hosting_backup_gc_sites')) {
-    drupal_install_schema('hosting_site_backup_manager');
+    // TODO The drupal_(un)install_schema functions are called automatically in D7.
+    // drupal_install_schema('hosting_site_backup_manager')
   }
 }
 
 /**
- * Implemention of hook_uninstall().
+ * Implements hook_uninstall().
  */
 function hosting_site_backup_manager_uninstall() {
-  drupal_uninstall_schema('hosting_site_backup_manager');
+  // TODO The drupal_(un)install_schema functions are called automatically in D7.
+  // drupal_uninstall_schema('hosting_site_backup_manager')
 }
 
 /**
- * Implemention of hook_schema().
+ * Implements hook_schema().
  */
 function hosting_site_backup_manager_schema() {
   $schema = array();
 
   $schema['hosting_backup_gc_sites'] = array(
-    'description' => t('A cache of the last gc times of all enabled sites.'),
+    'description' => 'A cache of the last gc times of all enabled sites.',
     'fields' => array(
       'site_id' => array(
-        'description' => t('The sites nid from the {node} table.'),
+        'description' => 'The sites nid from the {node} table.',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'last_gc' => array(
-        'description' => t('The timestamp of the last gc of this site.'),
+        'description' => 'The timestamp of the last gc of this site.',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -55,10 +63,13 @@ function hosting_site_backup_manager_update_6101() {
   $schema = hosting_site_backup_manager_schema();
 
   if (!db_table_exists('hosting_backup_gc_sites')) {
-    db_create_table($ret, 'hosting_backup_gc_sites', $schema['hosting_backup_gc_sites']);
+    db_create_table('hosting_backup_gc_sites', $schema['hosting_backup_gc_sites']);
   }
 
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
@@ -69,5 +80,8 @@ function hosting_site_backup_manager_update_6201() {
 
   variable_del('hosting_site_backup_manager_base_path');
 
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }

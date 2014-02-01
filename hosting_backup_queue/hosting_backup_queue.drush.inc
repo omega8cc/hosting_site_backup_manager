@@ -2,7 +2,7 @@
 
 
 /**
- * Implementation of hook_hosting_post_backup
+ * Implements hook_hosting_post_backup().
  *
  * Changes the last backup timestamp of the site to the task time.
  */
@@ -13,7 +13,7 @@ function hosting_backup_queue_post_hosting_backup_task($task, $data) {
 }
 
 /**
- * Implementation of hook_hosting_post_backup_delete
+ * Implements hook_hosting_post_backup_delete().
  *
  * Changes the last backup timestamp of the site to the task time.
  */

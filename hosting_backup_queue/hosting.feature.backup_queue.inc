@@ -27,7 +27,7 @@ function hosting_backup_queue_hosting_feature() {
     // associate with a specific node type.
     //  'node' => 'nodetype',
     // which group to display in ( null , experimental )
-    'group' => 'experimental'
-    );
+    'group' => 'experimental',
+  );
   return $features;
 }

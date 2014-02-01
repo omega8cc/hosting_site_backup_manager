@@ -3,4 +3,4 @@ description = Provides a user interface to manage site backups.
 package = Hosting
 dependencies[] = hosting_site
 dependencies[] = hosting_task
-core = 6.x
+core = 7.x
