@@ -1,0 +1,7 @@
+name = Backup window
+description = Allows restricting the backup queue to only run at certain times
+core = 6.x
+package = Hosting
+dependencies[] = hosting_site
+dependencies[] = hosting_site_backup_manager
+dependencies[] = hosting_backup_queue
