@@ -10,10 +10,10 @@
  */
 function hosting_backup_window_is_allowed_time_window($time = NULL) {
   if ($time === NULL) {
-    $time = time();
+    $time = REQUEST_TIME;
   }
 
-  $today = date("D", time());
+  $today = date("D", REQUEST_TIME);
 
   $start_time = variable_get('hosting_backup_window_time_window_start', '00:00');
   $end_time = variable_get('hosting_backup_window_time_window_end', '23:59');
@@ -33,12 +33,12 @@ function hosting_backup_window_is_allowed_time_window($time = NULL) {
     $end_time = strtotime($end_time);
   }
 
-/*
-  dsm('Evaluated time: ' . date('m/d/Y h:i:s a', time()));
-  dsm('Start time : ' . date('m/d/Y h:i:s a', $start_time));
-  dsm('End time : ' . date('m/d/Y h:i:s a', $end_time));
-  dsm('Today: ' . $today );
-*/
+  /*
+   dsm('Evaluated time: ' . date('m/d/Y h:i:s a', time()));
+   dsm('Start time : ' . date('m/d/Y h:i:s a', $start_time));
+   dsm('End time : ' . date('m/d/Y h:i:s a', $end_time));
+   dsm('Today: ' . $today );
+   */
 
   if ($time < $start_time) {
     // Before the start time
@@ -71,8 +71,8 @@ function _hosting_backup_window_get_backup_task($site) {
 }
 
 /**
-* Implementation of hook_form_alter()
-*/
+ * Implements hook_form_alter().
+ */
 function hosting_backup_window_form_alter(&$form, $form_state, $form_id) {
   if ($form_id == 'hosting_site_backup_manager_settings' && user_access('administer hosting backup queue')) {
 
@@ -89,30 +89,30 @@ function hosting_backup_window_form_alter(&$form, $form_state, $form_id) {
     );
 
     $form['backup_window']['backup_window_start'] = array(
-     '#type' => 'textfield',
-     '#title' => t('Start doing automated backups at'),
-     '#description' => t('Format: 00:00. ') . $server_time_message,
-     '#default_value' => variable_get('hosting_backup_window_time_window_start', '00:00'),
-     '#maxlength' => 5,
-     '#size' => 6,
+      '#type' => 'textfield',
+      '#title' => t('Start doing automated backups at'),
+      '#description' => t('Format: 00:00. ') . $server_time_message,
+      '#default_value' => variable_get('hosting_backup_window_time_window_start', '00:00'),
+      '#maxlength' => 5,
+      '#size' => 6,
     );
 
     $form['backup_window']['backup_window_end'] = array(
-     '#type' => 'textfield',
-     '#title' => t('Stop doing automated backups'),
-     '#description' => t('Format: 23:59. ') . $server_time_message,
-     '#default_value' => variable_get('hosting_backup_window_time_window_end', '23:59'),
-     '#maxlength' => 5,
-     '#size' => 6,
+      '#type' => 'textfield',
+      '#title' => t('Stop doing automated backups'),
+      '#description' => t('Format: 23:59. ') . $server_time_message,
+      '#default_value' => variable_get('hosting_backup_window_time_window_end', '23:59'),
+      '#maxlength' => 5,
+      '#size' => 6,
     );
 
     $form['backup_window']['backup_window_days'] = array(
-     '#title' => t('Only do backups on those days'),
-     '#type' => 'select',
-     '#options' => $days_array,
-     '#multiple' => TRUE,
-     '#size' => 7,
-     '#default_value' => variable_get('hosting_backup_window_time_window_days', $days_array),
+      '#title' => t('Only do backups on those days'),
+      '#type' => 'select',
+      '#options' => $days_array,
+      '#multiple' => TRUE,
+      '#size' => 7,
+      '#default_value' => variable_get('hosting_backup_window_time_window_days', $days_array),
     );
 
     $form['#validate'][] = 'hosting_backup_window_time_window_form_validate';
@@ -120,24 +120,32 @@ function hosting_backup_window_form_alter(&$form, $form_state, $form_id) {
   }
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_backup_window_time_window_form_validate(&$form, &$form_state) {
-    $date_format = 'H:i';
+  $date_format = 'H:i';
 
-    $values = $form_state['values'];
+  $values = $form_state['values'];
 
-    if (!empty($values['backup_window_start'])) {
-      if (strtotime($values['backup_window_start']) == 0) {
-        form_set_error('backup_window_start', t('Invalid start time'));
-      }
+  if (!empty($values['backup_window_start'])) {
+    if (strtotime($values['backup_window_start']) == 0) {
+      form_set_error('backup_window_start', t('Invalid start time'));
     }
+  }
 
-    if (!empty($values['backup_window_end'])) {
-      if (strtotime($values['backup_window_end']) == 0) {
-        form_set_error('backup_window_end', t('Invalid end time'));
-      }
+  if (!empty($values['backup_window_end'])) {
+    if (strtotime($values['backup_window_end']) == 0) {
+      form_set_error('backup_window_end', t('Invalid end time'));
     }
+  }
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function hosting_backup_window_time_window_form_submit(&$form, &$form_state) {
   $values = $form_state['values'];
 
