@@ -22,7 +22,7 @@ function hosting_site_backup_manager_menu() {
     'type' => MENU_LOCAL_TASK,
   );
 
-  $items['node/%hosting_site_node/backups'] = array(
+  $items['node/%node/backups'] = array(
     'title' => 'Backups',
     'description' => 'List of backups of this website',
     'page callback' => 'hosting_site_backup_manager_page',
@@ -32,7 +32,7 @@ function hosting_site_backup_manager_menu() {
     'type' => MENU_LOCAL_TASK,
   );
 
-  $items['node/%hosting_site_node/ajax/backups'] = array(
+  $items['node/%node/ajax/backups'] = array(
     'title' => 'Backup list',
     'description' => 'AJAX callback for refreshing backups list',
     'page callback' => 'hosting_site_backup_manager_ajax_list',
@@ -42,7 +42,7 @@ function hosting_site_backup_manager_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  $items['node/%hosting_site_node/backup/download/%'] = array(
+  $items['node/%node/backup/download/%'] = array(
     'title' => 'Download backup',
     'description' => 'Download the selected backup',
     'page callback' => 'hosting_site_backup_manager_download',
@@ -52,7 +52,7 @@ function hosting_site_backup_manager_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  $items['node/%hosting_site_node/backup/delete/%'] = array(
+  $items['node/%node/backup/delete/%'] = array(
     'title' => 'Delete backup',
     'description' => 'Delete the selected backup',
     'page callback' => 'hosting_site_backup_manager_delete',
@@ -62,7 +62,7 @@ function hosting_site_backup_manager_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  $items['node/%hosting_site_node/backup/restore/%'] = array(
+  $items['node/%node/backup/restore/%'] = array(
     'title' => 'Restore backup',
     'description' => 'Restore the selected backup',
     'page callback' => 'hosting_site_backup_manager_restore',
@@ -72,7 +72,7 @@ function hosting_site_backup_manager_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  $items['node/%hosting_site_node/backup/export/%'] = array(
+  $items['node/%node/backup/export/%'] = array(
     'title' => 'Export backup',
     'description' => 'Export the selected backup',
     'page callback' => 'hosting_site_backup_manager_export',
@@ -109,7 +109,7 @@ function hosting_site_backup_manager_permission() {
  */
 function hosting_site_backup_manager_delete($site, $bid) {
   // Get the filename.
-  $source = db_fetch_object(db_query("SELECT filename FROM {hosting_site_backups} WHERE site = :site AND bid = :bid ORDER BY timestamp DESC", array(':site' => $site->nid, ':bid' => $bid)));
+  $source = db_query("SELECT filename FROM {hosting_site_backups} WHERE site = :site AND bid = :bid ORDER BY timestamp DESC", array(':site' => $site->nid, ':bid' => $bid))->fetchObject();
 
   if ($source) {
     // Return a confirmation form.
@@ -143,7 +143,7 @@ function hosting_site_backup_manager_confirm_delete($form, $form_state, $filenam
   drupal_add_js(drupal_get_path('module', 'hosting_task') . '/hosting_task.js');
 
   // Get the backup data.
-  $source = db_fetch_object(db_query("SELECT * FROM {hosting_site_backups} WHERE site = :site AND bid = :bid", array(':site' => $sitenid, ':bid' => $bid)));
+  $source = db_query("SELECT * FROM {hosting_site_backups} WHERE site = :site AND bid = :bid", array(':site' => $sitenid, ':bid' => $bid))->fetchObject();
 
   // Build the form.
   $form = array();
@@ -196,7 +196,7 @@ function hosting_site_backup_manager_confirm_delete_submit($form, &$form_state) 
   hosting_add_task($sitenid, 'backup-delete', array($bid => $filename));
 
   $form_state['redirect'] = 'node/' . $sitenid . '/backup';
-  modalframe_close_dialog();
+  overlay_close_dialog();
 }
 
 /**
@@ -241,7 +241,7 @@ function hosting_site_backup_manager_confirm_restore($form, $form_state, $siteni
   $form['#bid'] = $bid;
 
   // Get the backup data.
-  $source = db_fetch_object(db_query("SELECT * FROM {hosting_site_backups} WHERE site = :site AND bid = :bid", array(':site' => $sitenid, ':bid' => $bid)));
+  $source = db_query("SELECT * FROM {hosting_site_backups} WHERE site = :site AND bid = :bid", array(':site' => $sitenid, ':bid' => $bid))->fetchObject();
 
   // Not the best formatted code, but suffices for now.
   $form['explanation'] = array(
@@ -282,7 +282,7 @@ function hosting_site_backup_manager_confirm_restore_submit($form, &$form_state)
   $bid = $form['#bid'];
   hosting_add_task($sitenid, 'restore', array('bid' => $bid));
   $form_state['redirect'] = 'node/' . $sitenid . '/backup';
-  modalframe_close_dialog();
+  overlay_close_dialog();
 }
 
 /**
@@ -290,7 +290,7 @@ function hosting_site_backup_manager_confirm_restore_submit($form, &$form_state)
  */
 function hosting_site_backup_manager_export($site, $bid) {
   // Get the filename.
-  $source = db_fetch_object(db_query("SELECT filename FROM {hosting_site_backups} WHERE site = :site AND bid = :bid ORDER BY timestamp DESC", array(':site' => $site->nid, ':bid' => $bid)));
+  $source = db_query("SELECT filename FROM {hosting_site_backups} WHERE site = :site AND bid = :bid ORDER BY timestamp DESC", array(':site' => $site->nid, ':bid' => $bid))->fetchObject();
 
   // Start the task.
   hosting_add_task($site->nid, 'export_backup', array('backup' => $source->filename));
@@ -321,7 +321,7 @@ function _hosting_site_backup_manager_get_backup_export_root() {
  */
 function hosting_site_backup_manager_download($site, $bid) {
   // @todo: check if the bid is not in a task.
-  $source = db_fetch_object(db_query("SELECT filename FROM {hosting_site_backups} WHERE site = :site AND bid = :bid ORDER BY timestamp DESC", array(':site' => $site->nid, ':bid' => $bid)));
+  $source = db_query("SELECT filename FROM {hosting_site_backups} WHERE site = :site AND bid = :bid ORDER BY timestamp DESC", array(':site' => $site->nid, ':bid' => $bid))->fetchObject();
 
   if ($source) {
     $backup_root = _hosting_site_backup_manager_get_backup_export_root();
@@ -397,13 +397,18 @@ function hosting_site_backup_manager_backups_table($site) {
   global $user;
 
   // Determine client name.
-  $client = hosting_client_node_load($site->client);
+  $client = hosting_get_client($site->client);
 
   // Determine site's profile name.
   $profile = node_load($site->profile);
 
   $ishostmaster = ($profile->short_name == 'hostmaster');
   $isdeleted = $site->site_status == HOSTING_SITE_DELETED;
+
+  if ($ishostmaster) {
+    $output = t("Feature not available for the Hostmaster site.");
+    return $output;
+  }
 
   $headers[] = t('Backup');
   $headers[] = array(
@@ -412,6 +417,7 @@ function hosting_site_backup_manager_backups_table($site) {
   );
 
   $rows = array();
+  $output = '';
 
   // Only allow actions when there's no backup delete or
   // restore task running for this node.
@@ -420,23 +426,18 @@ function hosting_site_backup_manager_backups_table($site) {
   // TODO Make the table reload automatically.
   $result = db_query("SELECT bid, description, filename, size, timestamp FROM {hosting_site_backups} WHERE site = :site ORDER BY timestamp DESC", array(':site' => $site->nid));
 
-  if ($ishostmaster) {
-    $output = t("Feature not available for the Hostmaster site.");
-    return $output;
-  }
-
-  if (db_affected_rows($result) == 0) {
+  if ($result->rowCount() == 0) {
     $output = t("No backups available.");
     $options = array(
       'query' => array('token' => drupal_get_token($user->uid)),
-      'attributes' => array('class' => 'hosting-button-dialog'),
+      'attributes' => array('class' => array('hosting-button-dialog')),
     );
 
     $output .= '&nbsp;' . l(t('Create backup'), 'node/' . $site->nid . '/site_backup', $options);
     return $output;
   }
 
-  while ($object = db_fetch_object($result)) {
+  while ($object = $result->fetchObject()) {
     $row = array();
     $row['description'] = filter_xss($object->description) . "<br />" . format_size($object->size) . " - " . format_date($object->timestamp, 'short');
 
@@ -464,11 +465,11 @@ function hosting_site_backup_manager_backups_table($site) {
 
     $rows[] = array(
       'data' => $row,
-      'class' => $info['class'],
+      'class' => '',
     );
   }
 
-  $output .= theme('table', array('header' => $headers, 'rows' => $rows, 'attributes' => array('class' => 'hosting-table')));
+  $output .= theme('table', array('header' => $headers, 'rows' => $rows, 'attributes' => array('class' => array('hosting-table'))));
   return $output;
 }
 
@@ -502,7 +503,7 @@ function _hosting_site_backup_manager_isfileavailable($site, $bid) {
   $result = FALSE;
 
   // @todo: check if the bid is not in a task.
-  $source = db_fetch_object(db_query("SELECT filename FROM {hosting_site_backups} WHERE site = :site AND bid = :bid ORDER BY timestamp DESC", array(':site' => $site->nid, ':bid' => $bid)));
+  $source = db_query("SELECT filename FROM {hosting_site_backups} WHERE site = :site AND bid = :bid ORDER BY timestamp DESC", array(':site' => $site->nid, ':bid' => $bid))->fetchObject();
 
   if ($source) {
     // Get Document Root.
@@ -759,7 +760,7 @@ function hosting_backup_gc_queue($count) {
 function hosting_backup_gc_get_sites($limit = 5) {
   $sites = array();
   $result = db_query("SELECT n.nid FROM {node} n LEFT JOIN {hosting_site} s ON n.nid = s.nid LEFT JOIN {hosting_backup_gc_sites} gc ON n.nid = gc.site_id WHERE n.type = :n.type and s.status = :s.status ORDER BY gc.last_gc ASC, n.nid ASC limit %d", array(':n.type' => 'site', ':s.status' => HOSTING_SITE_ENABLED, '' => $limit));
-  while ($nid = db_fetch_object($result)) {
+  while ($nid = $result->fetchObject()) {
     $sites[$nid->nid] = node_load($nid->nid);
   }
   return $sites;
@@ -776,7 +777,7 @@ function hosting_backup_gc_get_sites($limit = 5) {
  */
 function hosting_backup_gc_backup_list($site) {
   $result = db_query("SELECT bid, filename, timestamp FROM {hosting_site_backups} WHERE site = :site ORDER BY timestamp DESC", array(':site' => $site));
-  while ($object = db_fetch_object($result)) {
+  while ($object = $result->fetchObject()) {
     $backups[$object->bid] = $object;
   }
   return $backups;
