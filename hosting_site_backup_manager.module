@@ -9,9 +9,6 @@
 
 /**
  * Implements hook_menu().
- *
- * @return array
- *   An array of menu items.
  */
 function hosting_site_backup_manager_menu() {
   $items = array();
@@ -95,7 +92,6 @@ function hosting_site_backup_manager_permission() {
   return array(
     'administer hosting site backup manager' => array(
       'title' => t('administer hosting site backup manager'),
-      'description' => t('TODO Add a description for \'administer hosting site backup manager\''),
     ),
   );
 }
@@ -403,7 +399,7 @@ function hosting_site_backup_manager_backups_table($site) {
   // Determine client name.
   $client = hosting_client_node_load($site->client);
 
-  // Determine site's profile name
+  // Determine site's profile name.
   $profile = node_load($site->profile);
 
   $ishostmaster = ($profile->short_name == 'hostmaster');
@@ -552,7 +548,8 @@ function hosting_site_backup_manager_cron() {
         }
 
         // Get the inode Change time, not to be confused with the modified time.
-        // When the inode changed, not the content. e.g. when the extra hardlink was added to the inode.
+        // When the inode changed, not the content.
+        // For example when the extra hardlink was added to the inode.
         if ($path2->getCTime() < (REQUEST_TIME - $backup_export_expire_timeout)) {
           echo "wanna unlink: " . $path2->getPathname();
           watchdog('hosting_site_backup_manager',
@@ -578,7 +575,7 @@ function hosting_site_backup_manager_cron() {
 }
 
 /**
- * Configuration form for backup schedules
+ * Configuration form for backup schedules.
  */
 function hosting_site_backup_manager_settings($form, &$form_state) {
 
@@ -679,6 +676,9 @@ function hosting_site_backup_manager_settings($form, &$form_state) {
   return system_settings_form($form);
 }
 
+/**
+ * Form validation function for the hosting_backup_gc_intervals element.
+ */
 function hosting_backup_gc_intervals_element_validate($element, &$form_state) {
   $values = $form_state['values'][$element['#parents'][0]];
 
@@ -706,7 +706,7 @@ function hosting_site_backup_manager_hosting_queues() {
   $queue['backup_gc'] = array(
     'name' => t('Backup GC'),
     'description' => t('Process the garbage collection of backups.'),
-    'type' => 'batch', # run queue sequentially. always with the same parameters.
+    'type' => 'batch', // Run queue sequentially. always with the same parameters.
     'frequency' => strtotime("1 hour", 0),
     'min_threads' => 6,
     'max_threads' => 12,
@@ -768,9 +768,10 @@ function hosting_backup_gc_get_sites($limit = 5) {
 /**
  * Retrieve a list of backup generated for a site.
  *
- * @param site
+ * @param string $site
  *   The node if of the site backups are being retrieved for
- * @return
+ *
+ * @return array
  *   An associative array of backups existing for the site, indexed by bid and sorted reverse chronologically.
  */
 function hosting_backup_gc_backup_list($site) {
@@ -825,12 +826,12 @@ function hosting_backup_gc_site_touch($site_id, $timestamp = NULL) {
     'site_id' => $site_id,
     'last_gc' => $timestamp,
   );
-  if (db_query('SELECT count(*) FROM {hosting_backup_gc_sites} WHERE site_id = :site_id', array(':site_id' => $record['site_id']))->fetchField()) {
-    // Update
+  if (db_query('SELECT count(site_id) FROM {hosting_backup_gc_sites} WHERE site_id = :site_id', array(':site_id' => $record['site_id']))->fetchField()) {
+    // Update.
     drupal_write_record('hosting_backup_gc_sites', $record, 'site_id');
   }
   else {
-    // Insert
+    // Insert.
     drupal_write_record('hosting_backup_gc_sites', $record);
   }
 }
@@ -884,16 +885,17 @@ function theme_hosting_backup_gc_intervals_table($variables) {
 /**
  * Generate example tekst for garbage collection intervals.
  *
- * @return string HTML
+ * @return string
+ *   HTML
  */
 function _hosting_backup_gc_example() {
   $now = REQUEST_TIME;
 
-  // Introduction text
+  // Introduction text.
   $output = '<p>' . t("This page provides an example of how the current backup garbage collection settings affect stored backups.") . '<br />';
   $output .= t("The backups listed below are dummies (they don't represent real backups), but they show how many backups would be kept for a typical site over a given period.") . '</p>';
 
-  // Get current interval settings
+  // Get current interval settings.
   $intervals = variable_get('hosting_backup_gc_intervals', array());
   ksort($intervals);
   if (empty($intervals)) {
@@ -901,13 +903,13 @@ function _hosting_backup_gc_example() {
     return $output;
   }
 
-  // Get history (how long ago to display backups for)
+  // Get history (how long ago to display backups for).
   $interval_keys = array_keys($intervals);
   rsort($interval_keys);
   $id = $interval_keys[0];
   $history = ($intervals[$id]['older_than']['number'] * $intervals[$id]['older_than']['interval']) + ($intervals[$id]['keep_per']['number'] * $intervals[$id]['keep_per']['interval'] * 5);
 
-  // Get backup queue configuration
+  // Get backup queue configuration.
   $default_backup_interval = variable_get('hosting_backup_queue_default_interval', strtotime('1 day', 0));
   $period = array();
   switch ($default_backup_interval) {
@@ -915,33 +917,39 @@ function _hosting_backup_gc_example() {
       $period['value'] = -1;
       $period['unit'] = 'hours';
       break;
+
     case '21600':
       $period['value'] = -6;
       $period['unit'] = 'hours';
       break;
+
     case '43200':
       $period['value'] = -12;
       $period['unit'] = 'hours';
       break;
+
     case '86400':
       $period['value'] = -1;
       $period['unit'] = 'days';
       break;
+
     case '604800':
       $period['value'] = -1;
       $period['unit'] = 'weeks';
       break;
+
     case '2419200':
       $period['value'] = -4;
       $period['unit'] = 'weeks';
       break;
+
     case '31536000':
       $period['value'] = -1;
       $period['unit'] = 'years';
       break;
   }
 
-  // Create a list of dummy backups (based on the default interval)
+  // Create a list of dummy backups (based on the default interval).
   $number_backups = $history / $default_backup_interval;
   $backups = array();
   $i = 0;
@@ -951,7 +959,7 @@ function _hosting_backup_gc_example() {
     $i++;
   }
 
-  // Delete dummy backups based on configured intervals
+  // Delete dummy backups based on configured intervals.
   foreach ($intervals as $interval) {
     $pockets = array();
     foreach ($backups as $id => $backup) {
@@ -967,14 +975,14 @@ function _hosting_backup_gc_example() {
     }
   }
 
-  // Get list of backup dates
+  // Get list of backup dates.
   $items = array();
   foreach ($backups as $backup) {
     $items[] = $backup['date'];
   }
   $items[] = '...';
 
-  // Display remaining backups
+  // Display remaining backups.
   $output .= theme('item_list', array('items' => $items, 'title' => t('Backups')));
   return $output;
 }
