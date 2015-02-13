@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @file
+ * Code for the hosting_backup_queue module
+ */
 
 /**
  * Implements hook_permission().
@@ -274,9 +278,9 @@ function hosting_backup_queue_insert($node) {
 }
 
 /**
- * Implements hook_update().
+ * Implements hook_node_update().
  */
-function hosting_backup_queue_update($node) {
+function hosting_backup_queue_node_update($node) {
   if (!empty($node->hosting_backup_queue_settings)) {
     if ($node->hosting_backup_queue_settings == 'default') {
       hosting_backup_queue_delete($node);
@@ -303,43 +307,27 @@ function hosting_backup_queue_update($node) {
  * Implements hook_delete().
  */
 function hosting_backup_queue_delete($node) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("DELETE FROM {hosting_backup_queue_sites_settings} WHERE site_id = %d", $node->nid) */
   db_delete('hosting_backup_queue_sites_settings')
   ->condition('site_id', $node->nid)
   ->execute();
 }
 
 /**
- * Implements hook_nodeapi().
+ * Implements hook_node_load().
  */
-function hosting_backup_queue_nodeapi_OLD(&$node, $op, $a3 = NULL, $a4 = NULL) {
-  // TODO Remaining code in this function needs to be moved to the appropriate new hook function.
-  if ($node->type == 'site') {
-    switch ($op) {
-      case 'insert':
-        hosting_backup_queue_insert($node);
-        break;
-      case 'update':
-        hosting_backup_queue_update($node);
-        break;
-      case 'delete':
-        hosting_backup_queue_delete($node);
-        break;
-      case 'load':
-        $additions = array();
-        if ($record = db_fetch_object(db_query("SELECT status, schedule FROM {hosting_backup_queue_sites_settings} WHERE site_id = :site_id", array(':site_id' => $node->nid)))) {
-          $additions['hosting_backup_queue_settings'] = 'custom';
-          $additions['hosting_backup_queue_status'] = $record->status;
-          $additions['hosting_backup_queue_schedule'] = $record->schedule;
-        }
-        else {
-          $additions['hosting_backup_queue_settings'] = 'default';
-          $additions['hosting_backup_queue_status'] = variable_get('hosting_backup_queue_default_enabled', TRUE) ? 'enabled' : 'disabled';
-          $additions['hosting_backup_queue_schedule'] = variable_get('hosting_backup_queue_default_interval', strtotime('1 day', 0));
-        }
-        return $additions;
-        break;
+function hosting_backup_queue_node_load($nodes, $types) {
+  foreach ($nodes as $node) {
+    if ($node->type == 'site') {
+      if ($record = db_query("SELECT status, schedule FROM {hosting_backup_queue_sites_settings} WHERE site_id = :site_id", array(':site_id' => $node->nid))->fetchObject()) {
+        $node->hosting_backup_queue_settings = 'custom';
+        $node->hosting_backup_queue_status = $record->status;
+        $node->hosting_backup_queue_schedule = $record->schedule;
+      }
+      else {
+        $node->hosting_backup_queue_settings = 'default';
+        $node->hosting_backup_queue_status = variable_get('hosting_backup_queue_default_enabled', TRUE) ? 'enabled' : 'disabled';
+        $node->hosting_backup_queue_schedule = variable_get('hosting_backup_queue_default_interval', strtotime('1 day', 0));
+      }
     }
   }
 }
