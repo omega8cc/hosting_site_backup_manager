@@ -446,7 +446,7 @@ function hosting_site_backup_manager_backups_table($site) {
       'attributes' => array('class' => array('hosting-button-dialog')),
     );
 
-    $output .= '&nbsp;' . l(t('Create backup'), 'node/' . $site->nid . '/site_backup', $options);
+    $output .= '&nbsp;' . l(t('Create backup'), 'hosting_confirm/' . $site->nid . '/site_backup', $options);
     return $output;
   }
 
