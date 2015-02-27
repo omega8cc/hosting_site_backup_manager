@@ -27,8 +27,8 @@ function hosting_site_backup_manager_menu() {
     'description' => 'List of backups of this website',
     'page callback' => 'hosting_site_backup_manager_page',
     'page arguments' => array(1),
-    'access callback' => 'node_access',
-    'access arguments' => array('view', 1),
+    'access callback' => 'hosting_site_backup_manager_menu_access',
+    'access arguments' => array(1),
     'type' => MENU_LOCAL_TASK,
   );
 
@@ -84,6 +84,19 @@ function hosting_site_backup_manager_menu() {
 
   return $items;
 }
+
+/**
+ * The access callback for the Backups tab.
+ *
+ * Make sure this is a site node.
+ */
+function hosting_site_backup_manager_menu_access($node) {
+  // Only allow for site nodes.
+  if (is_object($node) && $node->type == 'site') {
+    return TRUE;
+  }
+}
+
 
 /**
  * Implements hook_permission().
