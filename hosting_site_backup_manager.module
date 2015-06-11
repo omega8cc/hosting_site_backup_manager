@@ -790,6 +790,7 @@ function hosting_backup_gc_get_sites($limit = 5) {
  */
 function hosting_backup_gc_backup_list($site) {
   $result = db_query("SELECT bid, filename, timestamp FROM {hosting_site_backups} WHERE site = :site ORDER BY timestamp DESC", array(':site' => $site));
+  $backups = array();
   while ($object = $result->fetchObject()) {
     $backups[$object->bid] = $object;
   }
