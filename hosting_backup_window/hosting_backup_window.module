@@ -1,12 +1,12 @@
 <?php
 
-
-//  if (hosting_backup_window_is_allowed_time_window()) {
+/**
+ * @file
+ * General module code.
+ */
 
 /**
  * Checks whether we are currently within the allowed time window for backups.
- *
- * @TODO : Consider nightly backups.
  */
 function hosting_backup_window_is_allowed_time_window($time = NULL) {
   if ($time === NULL) {
@@ -66,7 +66,7 @@ function hosting_backup_window_is_allowed_time_window($time = NULL) {
  * Returns the backup task to run for a given site.
  */
 function _hosting_backup_window_get_backup_task($site) {
-  // Ensure that we have a backup task to run
+  // Ensure that we have a backup task to run.
   return hosting_add_task($site, 'backup', array('description' => t('Automated backup')));
 }
 
@@ -121,8 +121,7 @@ function hosting_backup_window_form_alter(&$form, $form_state, $form_id) {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Validation callback for the hosting_site_backup_manager_settings form.
  */
 function hosting_backup_window_time_window_form_validate(&$form, &$form_state) {
   $date_format = 'H:i';
@@ -143,8 +142,7 @@ function hosting_backup_window_time_window_form_validate(&$form, &$form_state) {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Submit callback for the hosting_site_backup_manager_settings form.
  */
 function hosting_backup_window_time_window_form_submit(&$form, &$form_state) {
   $values = $form_state['values'];

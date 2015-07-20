@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @file
+ * Drush hook implementations.
+ */
 
 /**
  * Implements hook_hosting_post_backup().

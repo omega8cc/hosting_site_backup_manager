@@ -3,7 +3,7 @@
 
 /**
  * @file
- *   The hosting feature definition for the backup queue.
+ * The hosting feature definition for the backup queue.
  */
 
 /**
@@ -12,7 +12,7 @@
  * This will be used to generate the 'admin/hosting' page.
  *
  * @return
- *  associative array indexed by feature key.
+ *   associative array indexed by feature key.
  */
 function hosting_backup_queue_hosting_feature() {
   $features['backup_queue'] = array(

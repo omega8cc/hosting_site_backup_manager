@@ -1,10 +1,9 @@
 <?php
+
 /**
  * @file
  * Install, update and uninstall functions for the hosting_backup_queue module.
- *
  */
-
 
 /**
  * Implements hook_schema().

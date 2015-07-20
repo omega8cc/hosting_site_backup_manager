@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Code for the hosting_backup_queue module
+ * Code for the hosting_backup_queue module.
  */
 
 /**
@@ -66,7 +66,7 @@ function hosting_backup_queue_queue($count) {
  * Returns the backup task to run for a given site.
  */
 function _hosting_backup_queue_get_backup_task($site) {
-  // Ensure that we have a backup task to run
+  // Ensure that we have a backup task to run.
   return hosting_add_task($site, 'backup', array('description' => t('Automated backup')));
 }
 
@@ -88,6 +88,7 @@ function _hosting_backup_queue_get_outstanding_backups($limit = 20) {
 
   // Get all the nids of sites that have specific settings.
   $result = db_query('SELECT b.site_id, b.status, b.schedule, bq.last_backup FROM {hosting_backup_queue_sites_settings} b INNER JOIN {hosting_site} s ON b.site_id = s.nid INNER JOIN {node} n ON s.vid = n.vid LEFT JOIN {hosting_backup_queue_sites} bq ON bq.site_id = s.nid WHERE s.status = :s.status', array(':s.status' => HOSTING_SITE_ENABLED));
+
   while ($record = db_fetch_object($result)) {
     $all_sites_with_settings[] = $record->site_id;
     if ($record->status == 'enabled') {
@@ -103,8 +104,16 @@ function _hosting_backup_queue_get_outstanding_backups($limit = 20) {
     if (empty($all_sites_with_settings)) {
       $all_sites_with_settings[] = 0;
     }
-    // TODO Please convert this statement to the D7 database API syntax.
-    $result = db_query("SELECT s.nid, b.last_backup FROM {hosting_site} s INNER JOIN {node} n ON s.vid = n.vid LEFT JOIN {hosting_backup_queue_sites} b ON b.site_id = s.nid WHERE s.status = %d AND b.last_backup <= %d AND NOT(s.nid IN (" . db_placeholders($all_sites_with_settings) . ")) ORDER BY b.last_backup, n.nid ASC LIMIT %d", array_merge(array(HOSTING_SITE_ENABLED, REQUEST_TIME - $interval), $all_sites_with_settings, array($limit)));
+
+	$result = db_query("SELECT s.nid, b.last_backup
+		FROM {hosting_site} s
+		  INNER JOIN {node} n ON s.vid = n.vid
+		  LEFT JOIN {hosting_backup_queue_sites} b ON b.site_id = s.nid
+		WHERE s.status = :status AND b.last_backup <= :last_backup
+			AND NOT(s.nid IN (" . db_placeholders($all_sites_with_settings) . "))
+			ORDER BY b.last_backup, n.nid ASC LIMIT :limit",
+		array(':status' => HOSTING_SITE_ENABLED, ':last_backup' => REQUEST_TIME - $interval, ':limit' => $limit)
+	)
 
     while ($node = db_fetch_object($result)) {
       $return[$node->last_backup] =  $node->nid;
@@ -122,14 +131,16 @@ function _hosting_backup_queue_get_outstanding_backups($limit = 20) {
 }
 
 /**
- * Return the number of sites to backup
+ * Return the number of sites to backup.
  */
 function hosting_backup_queue_sites_count() {
   if (variable_get('hosting_backup_queue_default_enabled', TRUE)) {
     // Just return the number of enabled sites.
-    $max = db_query("SELECT COUNT(*) FROM {hosting_site} s INNER JOIN {node} n ON s.vid = n.vid WHERE s.status = :s.status", array(':s.status' => HOSTING_SITE_ENABLED))->fetchField();
+	$max = db_query("SELECT COUNT(*) FROM {hosting_site} s INNER JOIN {node} n ON s.vid = n.vid WHERE s.status = :s.status", array(':s.status' => HOSTING_SITE_ENABLED))->fetchField();
+
     $disabled_sites = db_query("SELECT COUNT(*) FROM {hosting_backup_queue_sites_settings} b INNER JOIN {hosting_site} s ON b.site_id = s.nid INNER JOIN {node} n ON s.vid = n.vid WHERE s.status = :s.status AND b.status = :b.status", array(':s.status' => HOSTING_SITE_ENABLED, ':b.status' => 'disabled'))->fetchField();
-    return max(0, $max - $disabled_sites);
+
+	return max(0, $max - $disabled_sites);
   }
   else {
     // We don't support per site config, just yet.
@@ -159,8 +170,6 @@ function hosting_backup_queue_backup_time_update($site, $timestamp = NULL) {
  * Clear the last backup timestamp for the given site.
  */
 function hosting_backup_queue_backup_time_clear($site) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query('DELETE FROM {hosting_backup_queue_sites} WHERE site_id = %d', $site) */
   db_delete('hosting_backup_queue_sites')
   ->condition('site_id', $site)
   ->execute();

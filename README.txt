@@ -1,8 +1,6 @@
 Hosting site Backup Manager
 ===========================
 
-Requires Provision site Backup Manager extension: http://drupal.org/project/provision_site_backup_manager
-
 This module adds more backup options to Aegir.
 
 - "Backups" tab to the "site" nodes in the Hostmaster environment.
@@ -10,11 +8,13 @@ This module adds more backup options to Aegir.
 
 - Specify how long Aegir should retain backups for.
 
+- Specify during which time window backups should be made.
+
 Installation
 ------------
 
-1. Install as any other Drupal module into your hostmaster site.
-2. Enable the feature in the 'experimental' section of 'admin/hosting' page.
+1. Add as any other Drupal module into your hostmaster site.
+2. Enable the feature in the 'experimental' section of the 'admin/hosting' page.
 
 Configuration
 -------------

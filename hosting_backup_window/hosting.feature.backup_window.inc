@@ -1,9 +1,8 @@
 <?php
 
-
 /**
  * @file
- *   The hosting feature definition for the backup window.
+ * The hosting feature definition for the backup window.
  */
 
 /**
@@ -12,7 +11,7 @@
  * This will be used to generate the 'admin/hosting' page.
  *
  * @return
- *  associative array indexed by feature key.
+ *   associative array indexed by feature key.
  */
 function hosting_backup_window_hosting_feature() {
   $features['backup_window'] = array(
