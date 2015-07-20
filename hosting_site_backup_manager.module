@@ -7,6 +7,8 @@
  * Adds a backup tab to the site node.
  */
 
+include_once(dirname(__FILE__) . '/hosting_site_backup_manager.inc');
+
 /**
  * Implements hook_menu().
  */
@@ -312,14 +314,6 @@ function hosting_site_backup_manager_export($site, $bid) {
   drupal_goto('node/' . $site->nid . '/backups');
 }
 
-/**
- * Helper function to get the root directory where backups are exported.
- * @todo: make this configurable again, the provision_site_backup_manager needs to be in sync.
- */
-function _hosting_site_backup_manager_get_backup_export_root() {
-  $root = '/var/aegir/backup-exports';
-  return $root;
-}
 
 /**
  * Function to download a backup file.
