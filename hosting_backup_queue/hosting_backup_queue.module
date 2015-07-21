@@ -87,9 +87,9 @@ function _hosting_backup_queue_get_outstanding_backups($limit = 20) {
   $all_sites_with_settings = array();
 
   // Get all the nids of sites that have specific settings.
-  $result = db_query('SELECT b.site_id, b.status, b.schedule, bq.last_backup FROM {hosting_backup_queue_sites_settings} b INNER JOIN {hosting_site} s ON b.site_id = s.nid INNER JOIN {node} n ON s.vid = n.vid LEFT JOIN {hosting_backup_queue_sites} bq ON bq.site_id = s.nid WHERE s.status = :s.status', array(':s.status' => HOSTING_SITE_ENABLED));
+  $result = db_query('SELECT b.site_id, b.status, b.schedule, bq.last_backup FROM {hosting_backup_queue_sites_settings} b INNER JOIN {hosting_site} s ON b.site_id = s.nid INNER JOIN {node} n ON s.vid = n.vid LEFT JOIN {hosting_backup_queue_sites} bq ON bq.site_id = s.nid WHERE s.status = :status', array(':status' => HOSTING_SITE_ENABLED));
 
-  while ($record = db_fetch_object($result)) {
+  while ($record = $result->fetchObject()) {
     $all_sites_with_settings[] = $record->site_id;
     if ($record->status == 'enabled') {
       if ($record->last_backup <= REQUEST_TIME - $record->schedule) {
@@ -105,17 +105,19 @@ function _hosting_backup_queue_get_outstanding_backups($limit = 20) {
       $all_sites_with_settings[] = 0;
     }
 
-    $result = db_query("SELECT s.nid, b.last_backup
+    $result = db_query_range("SELECT s.nid, b.last_backup
       FROM {hosting_site} s
         INNER JOIN {node} n ON s.vid = n.vid
         LEFT JOIN {hosting_backup_queue_sites} b ON b.site_id = s.nid
       WHERE s.status = :status AND b.last_backup <= :last_backup
-        AND NOT(s.nid IN (" . db_placeholders($all_sites_with_settings) . "))
-        ORDER BY b.last_backup, n.nid ASC LIMIT :limit",
-      array(':status' => HOSTING_SITE_ENABLED, ':last_backup' => REQUEST_TIME - $interval, ':limit' => $limit)
+        AND NOT(s.nid IN (:nids))
+        ORDER BY b.last_backup, n.nid ASC",
+      0,
+      $limit,
+      array(':status' => HOSTING_SITE_ENABLED, ':last_backup' => REQUEST_TIME - $interval, ':nids' => $all_sites_with_settings)
     );
 
-    while ($node = db_fetch_object($result)) {
+    while ($node = $result->fetchObject()) {
       $return[$node->last_backup] =  $node->nid;
     }
   }
@@ -136,15 +138,15 @@ function _hosting_backup_queue_get_outstanding_backups($limit = 20) {
 function hosting_backup_queue_sites_count() {
   if (variable_get('hosting_backup_queue_default_enabled', TRUE)) {
     // Just return the number of enabled sites.
-    $max = db_query("SELECT COUNT(*) FROM {hosting_site} s INNER JOIN {node} n ON s.vid = n.vid WHERE s.status = :s.status", array(':s.status' => HOSTING_SITE_ENABLED))->fetchField();
+    $max = db_query("SELECT COUNT(*) FROM {hosting_site} s INNER JOIN {node} n ON s.vid = n.vid WHERE s.status = :status", array(':status' => HOSTING_SITE_ENABLED))->fetchField();
 
-    $disabled_sites = db_query("SELECT COUNT(*) FROM {hosting_backup_queue_sites_settings} b INNER JOIN {hosting_site} s ON b.site_id = s.nid INNER JOIN {node} n ON s.vid = n.vid WHERE s.status = :s.status AND b.status = :b.status", array(':s.status' => HOSTING_SITE_ENABLED, ':b.status' => 'disabled'))->fetchField();
+    $disabled_sites = db_query("SELECT COUNT(*) FROM {hosting_backup_queue_sites_settings} b INNER JOIN {hosting_site} s ON b.site_id = s.nid INNER JOIN {node} n ON s.vid = n.vid WHERE s.status = :sstatus AND b.status = :bstatus", array(':sstatus' => HOSTING_SITE_ENABLED, ':bstatus' => 'disabled'))->fetchField();
 
     return max(0, $max - $disabled_sites);
   }
   else {
     // We don't support per site config, just yet.
-    return db_query("SELECT COUNT(*) FROM {hosting_backup_queue_sites_settings} b INNER JOIN {hosting_site} s ON b.site_id = s.nid INNER JOIN {node} n ON s.vid = n.vid WHERE s.status = :s.status AND b.status = :b.status", array(':s.status' => HOSTING_SITE_ENABLED, ':b.status' => 'enabled'))->fetchField();
+    return db_query("SELECT COUNT(*) FROM {hosting_backup_queue_sites_settings} b INNER JOIN {hosting_site} s ON b.site_id = s.nid INNER JOIN {node} n ON s.vid = n.vid WHERE s.status = :sstatus AND b.status = :b.status", array(':status' => HOSTING_SITE_ENABLED, ':b.status' => 'enabled'))->fetchField();
   }
 }
 
@@ -179,8 +181,8 @@ function hosting_backup_queue_backup_time_clear($site) {
  * Ensure that we have denormalised backup data for all enabled sites.
  */
 function _hosting_backup_queue_ensure_all_sites_denormalised() {
-  $sites = db_query('SELECT n.nid FROM {hosting_site} s INNER JOIN {node} n ON s.vid = n.vid LEFT JOIN {hosting_backup_queue_sites} b ON b.site_id = s.nid WHERE s.status = :s.status AND b.last_backup IS NULL', array(':s.status' => HOSTING_SITE_ENABLED));
-  while ($row = db_fetch_object($sites)) {
+  $result = db_query('SELECT n.nid FROM {hosting_site} s INNER JOIN {node} n ON s.vid = n.vid LEFT JOIN {hosting_backup_queue_sites} b ON b.site_id = s.nid WHERE s.status = :status AND b.last_backup IS NULL', array(':status' => HOSTING_SITE_ENABLED));
+  while ($row = $result->fetchObject()) {
     $timestamp = db_query("SELECT MAX(timestamp) FROM {hosting_site_backups} WHERE site = :site", array(':site' => $row->nid))->fetchField();
     if (empty($timestamp)) {
       $timestamp = 0;
