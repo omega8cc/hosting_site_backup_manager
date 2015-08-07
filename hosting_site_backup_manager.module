@@ -648,7 +648,7 @@ function hosting_site_backup_manager_settings($form, &$form_state) {
       '#options' => drupal_map_assoc(range(1, 365)),
       '#default_value' => isset($interval['older_than']['number']) ? $interval['older_than']['number'] : 1,
       '#attributes' => array(
-        'class' => 'hosting-backup-gc-inline',
+        'class' => array('hosting-backup-gc-inline'),
       ),
     );
 
@@ -657,7 +657,7 @@ function hosting_site_backup_manager_settings($form, &$form_state) {
       '#options' => $intervals,
       '#default_value' => isset($interval['older_than']['interval']) ? $interval['older_than']['interval'] : '',
       '#attributes' => array(
-        'class' => 'hosting-backup-gc-inline',
+        'class' => array('hosting-backup-gc-inline'),
       ),
     );
 
@@ -666,7 +666,7 @@ function hosting_site_backup_manager_settings($form, &$form_state) {
       '#options' => drupal_map_assoc(range(1, 365)),
       '#default_value' => isset($interval['keep_per']['number']) ? $interval['keep_per']['number'] : 1,
       '#attributes' => array(
-        'class' => 'hosting-backup-gc-inline',
+        'class' => array('hosting-backup-gc-inline'),
       ),
     );
 
@@ -675,7 +675,7 @@ function hosting_site_backup_manager_settings($form, &$form_state) {
       '#options' => $intervals,
       '#default_value' => isset($interval['keep_per']['interval']) ? $interval['keep_per']['interval'] : '',
       '#attributes' => array(
-        'class' => 'hosting-backup-gc-inline',
+        'class' => array('hosting-backup-gc-inline'),
       ),
     );
 
@@ -869,7 +869,7 @@ function theme_hosting_backup_gc_intervals_table($variables) {
   $rows = array();
 
   foreach (element_children($form) as $i) {
-    if ($form[$i]['#type'] == 'fieldset') {
+    if (!empty($form[$i]['#type']) && $form[$i]['#type'] == 'fieldset') {
       continue;
     }
     $row = array();
