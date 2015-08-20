@@ -875,12 +875,12 @@ function theme_hosting_backup_gc_intervals_table($variables) {
     $row = array();
     $row[] = array(
       'data' => t('For backups older than'),
-      'class' => 'hosting-backup-gc-narrow-first',
+      'class' => array('hosting-backup-gc-narrow-first'),
     );
     $row[] = drupal_render($form[$i]['older_than']);
     $row[] = array(
       'data' => t('Keep 1 backup per'),
-      'class' => 'hosting-backup-gc-narrow-second',
+      'class' => array('hosting-backup-gc-narrow-second'),
     );
     $row[] = drupal_render($form[$i]['keep_per']);
     $rows[] = $row;
