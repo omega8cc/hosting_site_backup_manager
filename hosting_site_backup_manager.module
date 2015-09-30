@@ -767,7 +767,11 @@ function hosting_backup_gc_queue($count) {
  */
 function hosting_backup_gc_get_sites($limit = 5) {
   $sites = array();
-  $result = db_query("SELECT n.nid FROM {node} n LEFT JOIN {hosting_site} s ON n.nid = s.nid LEFT JOIN {hosting_backup_gc_sites} gc ON n.nid = gc.site_id WHERE n.type = :n.type and s.status = :s.status ORDER BY gc.last_gc ASC, n.nid ASC limit %d", array(':n.type' => 'site', ':s.status' => HOSTING_SITE_ENABLED, '' => $limit));
+
+  $sql = "SELECT n.nid FROM {node} n LEFT JOIN {hosting_site} s ON n.nid = s.nid LEFT JOIN {hosting_backup_gc_sites} gc ON n.nid = gc.site_id WHERE n.type = 'site' and s.status = :status ORDER BY gc.last_gc ASC, n.nid";
+
+  $result = db_query_range($sql, 0, $limit , array(":status" => HOSTING_SITE_ENABLED));
+
   while ($nid = $result->fetchObject()) {
     $sites[$nid->nid] = node_load($nid->nid);
   }
