@@ -12,4 +12,3 @@ function _hosting_site_backup_manager_get_backup_export_root() {
   $root = variable_get('hosting_site_backup_manager_export_root', '/var/aegir/backup-exports');
   return $root;
 }
-
