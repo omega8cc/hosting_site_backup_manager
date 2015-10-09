@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 /**
  * @file
@@ -55,7 +55,7 @@ function drush_hosting_site_backup_manager_pre_hosting_task($task) {
 function drush_hosting_site_backup_manager_provision_export_backup($backup) {
   drush_log(dt('Start export backup command'), 'ok');
 
-  include_once(dirname(__FILE__) . '/../hosting_site_backup_manager.inc');
+  include_once dirname(__FILE__) . '/../hosting_site_backup_manager.inc';
 
   // Path for exported backups.
   $backupdir = _hosting_site_backup_manager_get_backup_export_root();
