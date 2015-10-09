@@ -139,15 +139,15 @@ function _hosting_backup_queue_get_outstanding_backups($limit = 20) {
 function hosting_backup_queue_sites_count() {
   if (variable_get('hosting_backup_queue_default_enabled', TRUE)) {
     // Just return the number of enabled sites.
-    $max = db_query("SELECT COUNT(*) FROM {hosting_site} s INNER JOIN {node} n ON s.vid = n.vid WHERE s.status = :status", array(':status' => HOSTING_SITE_ENABLED))->fetchField();
+    $max = db_query("SELECT COUNT(nid) FROM {hosting_site} s INNER JOIN {node} n ON s.vid = n.vid WHERE s.status = :status", array(':status' => HOSTING_SITE_ENABLED))->fetchField();
 
-    $disabled_sites = db_query("SELECT COUNT(*) FROM {hosting_backup_queue_sites_settings} b INNER JOIN {hosting_site} s ON b.site_id = s.nid INNER JOIN {node} n ON s.vid = n.vid WHERE s.status = :sstatus AND b.status = :bstatus", array(':sstatus' => HOSTING_SITE_ENABLED, ':bstatus' => 'disabled'))->fetchField();
+    $disabled_sites = db_query("SELECT COUNT(site_id) FROM {hosting_backup_queue_sites_settings} b INNER JOIN {hosting_site} s ON b.site_id = s.nid INNER JOIN {node} n ON s.vid = n.vid WHERE s.status = :sstatus AND b.status = :bstatus", array(':sstatus' => HOSTING_SITE_ENABLED, ':bstatus' => 'disabled'))->fetchField();
 
     return max(0, $max - $disabled_sites);
   }
   else {
     // We don't support per site config, just yet.
-    return db_query("SELECT COUNT(*) FROM {hosting_backup_queue_sites_settings} b INNER JOIN {hosting_site} s ON b.site_id = s.nid INNER JOIN {node} n ON s.vid = n.vid WHERE s.status = :sstatus AND b.status = :b.status", array(':status' => HOSTING_SITE_ENABLED, ':b.status' => 'enabled'))->fetchField();
+    return db_query("SELECT COUNT(site_id) FROM {hosting_backup_queue_sites_settings} b INNER JOIN {hosting_site} s ON b.site_id = s.nid INNER JOIN {node} n ON s.vid = n.vid WHERE s.status = :sstatus AND b.status = :b.status", array(':status' => HOSTING_SITE_ENABLED, ':b.status' => 'enabled'))->fetchField();
   }
 }
 
@@ -159,7 +159,7 @@ function hosting_backup_queue_backup_time_update($site, $timestamp = NULL) {
     'site_id' => $site,
     'last_backup' => !is_null($timestamp) ? $timestamp : REQUEST_TIME,
   );
-  if (db_query('SELECT count(*) FROM {hosting_backup_queue_sites} WHERE site_id = :site_id', array(':site_id' => $record['site_id']))->fetchField()) {
+  if (db_query('SELECT COUNT(site_id) FROM {hosting_backup_queue_sites} WHERE site_id = :site_id', array(':site_id' => $record['site_id']))->fetchField()) {
     // Update query:
     drupal_write_record('hosting_backup_queue_sites', $record, 'site_id');
   }
@@ -303,7 +303,7 @@ function hosting_backup_queue_node_update($node) {
         'status' => $node->hosting_backup_queue_status,
         'schedule' => $node->hosting_backup_queue_schedule,
       );
-      if (db_query('SELECT count(*) FROM {hosting_backup_queue_sites_settings} WHERE site_id = :site_id', array(':site_id' => $node->nid))->fetchField()) {
+      if (db_query('SELECT COUNT(site_id) FROM {hosting_backup_queue_sites_settings} WHERE site_id = :site_id', array(':site_id' => $node->nid))->fetchField()) {
         // Update
         drupal_write_record('hosting_backup_queue_sites_settings', $record, 'site_id');
       }
