@@ -14,7 +14,7 @@
 function hosting_site_backup_manager_drush_command() {
   $items['provision-export_backup'] = array(
     'description' => 'Make a site backup available for download.',
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_CONFIGURATION,
     'arguments' => array(
       'backup' => dt('The complete filepath of the backup to export.'),
     ),
@@ -22,7 +22,7 @@ function hosting_site_backup_manager_drush_command() {
 
   $items['provision-remove_export_backup'] = array(
     'description' => 'Make an exported site backup unavailable for download.',
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_CONFIGURATION,
     'arguments' => array(
       'export' => dt('The complete filepath of the exported backup to remove.'),
     ),
