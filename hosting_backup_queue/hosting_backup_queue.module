@@ -47,13 +47,14 @@ function hosting_backup_queue_hosting_queues() {
  * The main queue callback for the backups.
  */
 function hosting_backup_queue_queue($count) {
-  $sites = _hosting_backup_queue_get_outstanding_backups($count);
 
   if (module_exists('hosting_backup_window')) {
     if (!hosting_backup_window_is_allowed_time_window()) {
       return;
     }
   }
+
+  $sites = _hosting_backup_queue_get_outstanding_backups($count);
 
   foreach ($sites as $site_id) {
     if ($task = _hosting_backup_queue_get_backup_task($site_id)) {
