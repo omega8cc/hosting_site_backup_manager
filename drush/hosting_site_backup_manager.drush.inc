@@ -84,7 +84,7 @@ function drush_hosting_site_backup_manager_provision_export_backup($backup) {
 function drush_hosting_site_backup_manager_provision_remove_export_backup($export) {
   drush_log(dt('Start remove export backup command'), 'ok');
 
-  include_once(dirname(__FILE__) . '/../hosting_site_backup_manager.inc');
+  include_once dirname(__FILE__) . '/../hosting_site_backup_manager.inc';
 
   // Path for exported backups.
   $backupdir = _provision_site_backup_manager_get_backup_export_root();
