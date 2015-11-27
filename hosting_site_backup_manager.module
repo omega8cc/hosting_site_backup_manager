@@ -478,6 +478,12 @@ function hosting_site_backup_manager_backups_table($site) {
   }
 
   $output .= theme('table', array('header' => $headers, 'rows' => $rows, 'attributes' => array('class' => array('hosting-table'))));
+
+  $options = array(
+    'query' => array('token' => drupal_get_token($user->uid)),
+    'attributes' => array('class' => array('hosting-button-dialog')),
+  );
+  $output .= '&nbsp;' . l(t('Create a new backup'), 'hosting_confirm/' . $site->nid . '/site_backup', $options);
   return $output;
 }
 
