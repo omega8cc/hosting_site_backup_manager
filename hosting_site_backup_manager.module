@@ -7,8 +7,6 @@
  * Adds a backup tab to the site node.
  */
 
-include_once(dirname(__FILE__) . '/hosting_site_backup_manager.inc');
-
 /**
  * Implements hook_menu().
  */
@@ -332,7 +330,7 @@ function hosting_site_backup_manager_download($site, $bid) {
   $source = db_query("SELECT filename FROM {hosting_site_backups} WHERE site = :site AND bid = :bid ORDER BY timestamp DESC", array(':site' => $site->nid, ':bid' => $bid))->fetchObject();
 
   if ($source) {
-    $backup_root = _hosting_site_backup_manager_get_backup_export_root();
+    $backup_root = variable_get('aegir_backup_export_path', '/var/aegir/backup-exports');
     $symlink = $backup_root . '/' . basename($source->filename);
 
     if ($fd = @fopen($symlink, 'rb')) {
@@ -521,7 +519,7 @@ function _hosting_site_backup_manager_isfileavailable($site, $bid) {
 
   if ($source) {
     // Get Document Root.
-    $root = _hosting_site_backup_manager_get_backup_export_root();
+    $root = variable_get('aegir_backup_export_path', '/var/aegir/backup-exports');
     $file = $root . '/' . basename($source->filename);
 
     if (file_exists($file)) {
@@ -541,7 +539,7 @@ function _hosting_site_backup_manager_isfileavailable($site, $bid) {
  */
 function hosting_site_backup_manager_cron() {
   // Get Document Root.
-  $backup_root = _hosting_site_backup_manager_get_backup_export_root();
+  $backup_root = variable_get('aegir_backup_export_path', '/var/aegir/backup-exports');
   $backup_export_expire_timeout = 60 * 10;
   if (!is_dir($backup_root)) {
     return;
