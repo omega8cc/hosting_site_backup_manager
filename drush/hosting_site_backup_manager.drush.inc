@@ -56,7 +56,7 @@ function drush_hosting_site_backup_manager_provision_export_backup($backup) {
   drush_log(dt('Start export backup command'), 'ok');
 
   // Path for exported backups.
-  $backupdir = variable_get('aegir_backup_export_path', '/var/aegir/backup-exports');
+  $backupdir = drush_get_option('aegir_backup_export_path', '/var/aegir/backup-exports');
   if (!is_dir($backupdir)) {
     provision_file()->create_dir($backupdir, dt('General backup export directory'), 0751);
   }
@@ -85,7 +85,7 @@ function drush_hosting_site_backup_manager_provision_remove_export_backup($expor
   include_once dirname(__FILE__) . '/../hosting_site_backup_manager.inc';
 
   // Path for exported backups.
-  $backupdir = variable_get('aegir_backup_export_path', '/var/aegir/backup-exports');
+  $backupdir = drush_get_option('aegir_backup_export_path', '/var/aegir/backup-exports');
 
   if (drush_shell_cd_and_exec($backupdir, 'rm %s', $export)) {
     drush_log(dt('Backup export removed', array()), 'ok');
