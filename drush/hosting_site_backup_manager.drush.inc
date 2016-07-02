@@ -83,8 +83,6 @@ function drush_hosting_site_backup_manager_provision_export_backup($backup) {
 function drush_hosting_site_backup_manager_provision_remove_export_backup($export) {
   drush_log(dt('Start remove export backup command'), 'ok');
 
-  include_once dirname(__FILE__) . '/../hosting_site_backup_manager.inc';
-
   // Path for exported backups.
   $default_backup_exports = d('@server_master')->aegir_root . "/backup-exports";
   $backupdir = drush_get_option('aegir_backup_export_path', $default_backup_exports);
