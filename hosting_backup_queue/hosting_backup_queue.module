@@ -69,11 +69,11 @@ function hosting_backup_queue_queue($count) {
 function _hosting_backup_queue_get_backup_task($site) {
   // Check for an existing task
   $task = hosting_get_most_recent_task($site, 'backup');
-  if (is_object($task) && !in_array($task->task_status, array(HOSTING_TASK_QUEUED, HOSTING_TASK_PROCESSING))) {
-    return hosting_add_task($site, 'backup', array('description' => t('Automated backup')));
+  if (is_object($task) && in_array($task->task_status, array(HOSTING_TASK_QUEUED, HOSTING_TASK_PROCESSING))) {
+    return $task;
   }
   else {
-    return $task;
+    return hosting_add_task($site, 'backup', array('description' => t('Automated backup')));
   }
 }
 
