@@ -346,6 +346,8 @@ function hosting_site_backup_manager_download($site, $bid) {
 
       while (!feof($fd)) {
         print fread($fd, 1024);
+        ob_flush();
+        flush();
       }
       fclose($fd);
       // File downloaded so delete the file.
