@@ -271,13 +271,13 @@ function hosting_site_backup_manager_confirm_restore($form, $form_state, $siteni
 
   // Build the confirmation form.
   $form = confirm_form(
-	  $form,
-	  t('Are you sure you want to restore this backup?', array()),
-	  'node/' . $sitenid . '/backup',
-	  t('This action cannot be undone.'),
-	  t('Restore'),
-	  t('Cancel'),
-	  'hosting_site_backup_manager_confirm_restore'
+    $form,
+    t('Are you sure you want to restore this backup?', array()),
+    'node/' . $sitenid . '/backup',
+    t('This action cannot be undone.'),
+    t('Restore'),
+    t('Cancel'),
+    'hosting_site_backup_manager_confirm_restore'
   );
 
   // Copied from hosting_task.module
@@ -346,6 +346,8 @@ function hosting_site_backup_manager_download($site, $bid) {
 
       while (!feof($fd)) {
         print fread($fd, 1024);
+        ob_flush();
+        flush();
       }
       fclose($fd);
       // File downloaded so delete the file.
