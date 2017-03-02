@@ -330,6 +330,7 @@ function hosting_site_backup_manager_download($site, $bid) {
   $source = db_query("SELECT filename FROM {hosting_site_backups} WHERE site = :site AND bid = :bid ORDER BY timestamp DESC", array(':site' => $site->nid, ':bid' => $bid))->fetchObject();
 
   if ($source) {
+    // Get the backup export root. See also the companion variable provision_backup_export_path.
     $backup_root = variable_get('aegir_backup_export_path', '/var/aegir/backup-exports');
     $symlink = $backup_root . '/' . basename($source->filename);
 
@@ -520,7 +521,7 @@ function _hosting_site_backup_manager_isfileavailable($site, $bid) {
   $source = db_query("SELECT filename FROM {hosting_site_backups} WHERE site = :site AND bid = :bid ORDER BY timestamp DESC", array(':site' => $site->nid, ':bid' => $bid))->fetchObject();
 
   if ($source) {
-    // Get Document Root.
+    // Get the backup export root. See also the companion variable provision_backup_export_path.
     $root = variable_get('aegir_backup_export_path', '/var/aegir/backup-exports');
     $file = $root . '/' . basename($source->filename);
 
@@ -540,7 +541,7 @@ function _hosting_site_backup_manager_isfileavailable($site, $bid) {
  * Implements hook_cron().
  */
 function hosting_site_backup_manager_cron() {
-  // Get Document Root.
+  // Get the backup export root. See also the companion variable provision_backup_export_path.
   $backup_root = variable_get('aegir_backup_export_path', '/var/aegir/backup-exports');
   $backup_export_expire_timeout = 60 * 10;
   if (!is_dir($backup_root)) {

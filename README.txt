@@ -22,6 +22,11 @@ Configuration
 1. Settings are available at 'admin/hosting/backup_manager' and allow you to e.g. choose
 the numbers of backups to keep after specified periods of time.
 
+2. To change the directory where exported backups are placed you have to change two variables.
+For the frontent there is the Drupal variable 'aegir_backup_export_path' which can be added
+to the hostmaster's local.settings.php or set via 'drush @hostmaster variable-set'
+The second is in Drush land, called 'provision_backup_export_path' which can be set in a drushrc.php file.
+Like: `$options['provision_backup_export_path'] = '/var/aegir/backup-exports';`
 
 TODO
 ----
