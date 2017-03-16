@@ -822,7 +822,7 @@ function hosting_backup_gc_compute_backups_to_remove($intervals, $backups) {
     }
     foreach ($backups_to_consider as $backup) {
       // Now compute which backups we should be removing.
-      $pocket = floor((REQUEST_TIME - $backup->timestamp) / ($interval['keep_per']['number'] * $interval['keep_per']['interval']));
+      $pocket = floor($backup->timestamp / ($interval['keep_per']['number'] * $interval['keep_per']['interval']));
       // If there is not a backup in this pocket, mark it, otherwise add it to the list to delete.
       if (empty($pockets[$pocket])) {
         $pockets[$pocket] = TRUE;
