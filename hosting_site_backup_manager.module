@@ -209,7 +209,9 @@ function hosting_site_backup_manager_confirm_delete_submit($form, &$form_state) 
   hosting_add_task($sitenid, 'backup-delete', array($bid => $filename));
 
   $form_state['redirect'] = 'node/' . $sitenid . '/backup';
-  overlay_close_dialog();
+  if (module_exists('overlay')) {
+    overlay_close_dialog();
+  }
 }
 
 /**
@@ -296,7 +298,9 @@ function hosting_site_backup_manager_confirm_restore_submit($form, &$form_state)
   $bid = $form['#bid'];
   hosting_add_task($sitenid, 'restore', array('bid' => $bid));
   $form_state['redirect'] = 'node/' . $sitenid . '/backup';
-  overlay_close_dialog();
+  if (module_exists('overlay')) {
+    overlay_close_dialog();
+  }
 }
 
 /**
