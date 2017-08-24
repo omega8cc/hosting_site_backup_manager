@@ -764,8 +764,8 @@ function hosting_backup_gc_queue($count) {
     $backups = hosting_backup_gc_backup_list($site->nid);
     $backups_to_remove = hosting_backup_gc_compute_backups_to_remove($intervals, $backups);
 
-    // Add the backup delete task for the backups to remove
-    if (!empty($backups_to_remove)) {
+    // Add the backup delete task for the backups to remove, if there's not an outstanding task already.
+    if (!empty($backups_to_remove) && !hosting_task_outstanding($site->nid, 'backup-delete')) {
       hosting_add_task($site->nid, 'backup-delete', $backups_to_remove);
     }
 
