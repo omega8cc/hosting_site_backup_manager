@@ -209,7 +209,9 @@ function hosting_site_backup_manager_confirm_delete_submit($form, &$form_state) 
   hosting_add_task($sitenid, 'backup-delete', array($bid => $filename));
 
   $form_state['redirect'] = 'node/' . $sitenid . '/backup';
-  overlay_close_dialog();
+  if (module_exists('overlay')) {
+    overlay_close_dialog();
+  }
 }
 
 /**
@@ -296,7 +298,9 @@ function hosting_site_backup_manager_confirm_restore_submit($form, &$form_state)
   $bid = $form['#bid'];
   hosting_add_task($sitenid, 'restore', array('bid' => $bid));
   $form_state['redirect'] = 'node/' . $sitenid . '/backup';
-  overlay_close_dialog();
+  if (module_exists('overlay')) {
+    overlay_close_dialog();
+  }
 }
 
 /**
@@ -330,6 +334,7 @@ function hosting_site_backup_manager_download($site, $bid) {
   $source = db_query("SELECT filename FROM {hosting_site_backups} WHERE site = :site AND bid = :bid ORDER BY timestamp DESC", array(':site' => $site->nid, ':bid' => $bid))->fetchObject();
 
   if ($source) {
+    // Get the backup export root. See also the companion variable provision_backup_export_path.
     $backup_root = variable_get('aegir_backup_export_path', '/var/aegir/backup-exports');
     $symlink = $backup_root . '/' . basename($source->filename);
 
@@ -520,7 +525,7 @@ function _hosting_site_backup_manager_isfileavailable($site, $bid) {
   $source = db_query("SELECT filename FROM {hosting_site_backups} WHERE site = :site AND bid = :bid ORDER BY timestamp DESC", array(':site' => $site->nid, ':bid' => $bid))->fetchObject();
 
   if ($source) {
-    // Get Document Root.
+    // Get the backup export root. See also the companion variable provision_backup_export_path.
     $root = variable_get('aegir_backup_export_path', '/var/aegir/backup-exports');
     $file = $root . '/' . basename($source->filename);
 
@@ -540,7 +545,7 @@ function _hosting_site_backup_manager_isfileavailable($site, $bid) {
  * Implements hook_cron().
  */
 function hosting_site_backup_manager_cron() {
-  // Get Document Root.
+  // Get the backup export root. See also the companion variable provision_backup_export_path.
   $backup_root = variable_get('aegir_backup_export_path', '/var/aegir/backup-exports');
   $backup_export_expire_timeout = 60 * 10;
   if (!is_dir($backup_root)) {
@@ -759,8 +764,8 @@ function hosting_backup_gc_queue($count) {
     $backups = hosting_backup_gc_backup_list($site->nid);
     $backups_to_remove = hosting_backup_gc_compute_backups_to_remove($intervals, $backups);
 
-    // Add the backup delete task for the backups to remove
-    if (!empty($backups_to_remove)) {
+    // Add the backup delete task for the backups to remove, if there's not an outstanding task already.
+    if (!empty($backups_to_remove) && !hosting_task_outstanding($site->nid, 'backup-delete')) {
       hosting_add_task($site->nid, 'backup-delete', $backups_to_remove);
     }
 
@@ -821,7 +826,7 @@ function hosting_backup_gc_compute_backups_to_remove($intervals, $backups) {
     }
     foreach ($backups_to_consider as $backup) {
       // Now compute which backups we should be removing.
-      $pocket = floor((REQUEST_TIME - $backup->timestamp) / ($interval['keep_per']['number'] * $interval['keep_per']['interval']));
+      $pocket = floor($backup->timestamp / ($interval['keep_per']['number'] * $interval['keep_per']['interval']));
       // If there is not a backup in this pocket, mark it, otherwise add it to the list to delete.
       if (empty($pockets[$pocket])) {
         $pockets[$pocket] = TRUE;

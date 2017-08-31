@@ -208,17 +208,6 @@ function hosting_backup_queue_form_alter(&$form, $form_state, $form_id) {
       '#title' => t('Backup schedule'),
     );
 
-    $form['hosting_backup_queue']['hosting_backup_queue_status'] = array(
-      '#type' => 'radios',
-      '#title' => t('Scheduler status'),
-      '#default_value' => isset($form['#node']->hosting_backup_queue_status) ? $form['#node']->hosting_backup_queue_status : variable_get('hosting_backup_queue_default_enabled', TRUE) ? 'enabled' : 'disabled',
-      '#required' => TRUE,
-      '#options' => array(
-        'enabled' => t('Backups enabled'),
-        'disabled' => t('Backups disabled'),
-      ),
-    );
-
     $form['hosting_backup_queue']['hosting_backup_queue_settings'] = array(
       '#type' => 'radios',
       '#title' => t('Backup schedule settings'),
@@ -228,10 +217,21 @@ function hosting_backup_queue_form_alter(&$form, $form_state, $form_id) {
         'default' => t('Default settings'),
         'custom' => t('Site specific settings'),
       ),
+    );
+
+    $form['hosting_backup_queue']['hosting_backup_queue_status'] = array(
+      '#type' => 'radios',
+      '#title' => t('Scheduler status'),
+      '#default_value' => isset($form['#node']->hosting_backup_queue_status) ? $form['#node']->hosting_backup_queue_status : (variable_get('hosting_backup_queue_default_enabled', TRUE) ? 'enabled' : 'disabled'),
+      '#required' => TRUE,
+      '#options' => array(
+        'enabled' => t('Backups enabled'),
+        'disabled' => t('Backups disabled'),
+      ),
       '#states' => array(
-        // Only visible this field when backups is enabled.
+        // Only visible this field when not using default settings
         'visible' => array(
-          ':input[name="hosting_backup_queue_status"]' => array('value' => 'enabled'),
+          ':input[name="hosting_backup_queue_settings"]' => array('value' => 'custom'),
         ),
       ),
     );
@@ -260,6 +260,7 @@ function hosting_backup_queue_form_alter(&$form, $form_state, $form_id) {
         // Only visible this field when backups is enabled.
         'visible' => array(
           ':input[name="hosting_backup_queue_status"]' => array('value' => 'enabled'),
+          ':input[name="hosting_backup_queue_settings"]' => array('value' => 'custom'),
         ),
       ),
     );
