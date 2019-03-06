@@ -92,7 +92,7 @@ function hosting_site_backup_manager_menu() {
  */
 function hosting_site_backup_manager_menu_access($node) {
   // Only allow for site nodes.
-  if (is_object($node) && $node->type == 'site') {
+  if (is_object($node) && $node->type == 'site' && node_access('view', $node)) {
     return TRUE;
   }
 }
