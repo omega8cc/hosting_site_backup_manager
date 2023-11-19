@@ -62,7 +62,7 @@ function drush_hosting_site_backup_manager_provision_export_backup($backup) {
     provision_file()->create_dir($backupdir, dt('General backup export directory'), 0751);
   }
 
-  if (drush_shell_cd_and_exec($backupdir, 'ln %s .', $backup)) {
+  if (drush_shell_cd_and_exec($backupdir, 'ln -s %s .', $backup)) {
     drush_log(dt('Backup exported', array()), 'ok');
   }
   else {
